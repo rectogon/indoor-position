@@ -352,6 +352,7 @@ characteristicUUID:(NSString *)characteristicUUID {
 
   #pragma mark - Enhanced Device Information Methods
 
+//////ลบออก
   - (NSDictionary *)getDetailedDeviceInfoForUUID:(NSString *)uuid {
       NSLog(@"BluetoothBridge: Getting detailed device info for: %@", uuid);
     
@@ -390,7 +391,7 @@ characteristicUUID:(NSString *)characteristicUUID {
       NSLog(@"BluetoothBridge: Getting available services for device: %@", uuid);
     
       if (uuid && [uuid length] > 0) {
-          return [_manager getAvailableServices:uuid];
+          return [_manager getAvailableServicesForDevice:uuid];
       } else {
           NSLog(@"❌ Invalid UUID for services check");
           return @[];
@@ -477,9 +478,9 @@ characteristicUUID:(NSString *)characteristicUUID {
     
 
       // Start fresh scan ลบทิ้ง
-    //   [self startBluetoothScan];
+      [self startBluetoothScan];
     
-    //   NSLog(@"BluetoothBridge: Full device scan initiated");
+      NSLog(@"BluetoothBridge: Full device scan initiated");
   }
 
   #pragma mark - Error Handling and Validation

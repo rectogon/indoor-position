@@ -132,7 +132,7 @@ class BluetoothGATTApp(App):
         if self.current_device_uuid:
             try:
                 # ✅ ใช้ method ที่ return [String]
-                service_uuids = self.bridge.getAvailableServicesForDevice_(objc_str(self.current_device_uuid))
+                # service_uuids = self.bridge.getAvailableServicesForDevice_(objc_str(self.current_device_uuid))
                 #service_names = self.bridge.getAvailableServicesWithNames_(objc_str(self.current_device_uuid))
                 
                 

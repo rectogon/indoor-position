@@ -1,0 +1,1387 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.2
+-- Dumped by pg_dump version 17.2
+
+-- Started on 2025-03-20 14:11:55
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 4950 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 218 (class 1259 OID 16397)
+-- Name: anchor; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.anchor (
+    anchor_id text NOT NULL,
+    uuid text NOT NULL,
+    major text NOT NULL,
+    minor text NOT NULL,
+    x double precision NOT NULL,
+    y double precision NOT NULL
+);
+
+
+ALTER TABLE public.anchor OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 16390)
+-- Name: point; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.point (
+    point_id text NOT NULL,
+    x double precision NOT NULL,
+    y double precision NOT NULL
+);
+
+
+ALTER TABLE public.point OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 16522)
+-- Name: position_aoa; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.position_aoa (
+    id integer NOT NULL,
+    rssi_data_id integer NOT NULL,
+    x double precision NOT NULL,
+    y double precision NOT NULL,
+    error_distance double precision NOT NULL,
+    status text NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.position_aoa OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16521)
+-- Name: position_aoa_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.position_aoa_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.position_aoa_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4951 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: position_aoa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.position_aoa_id_seq OWNED BY public.position_aoa.id;
+
+
+--
+-- TOC entry 226 (class 1259 OID 16538)
+-- Name: position_rssi; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.position_rssi (
+    id integer NOT NULL,
+    rssi_data_id integer NOT NULL,
+    x text NOT NULL,
+    y text NOT NULL,
+    error_distance text NOT NULL,
+    status text NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.position_rssi OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 16537)
+-- Name: position_rssi_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.position_rssi_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.position_rssi_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4952 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: position_rssi_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.position_rssi_id_seq OWNED BY public.position_rssi.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 16472)
+-- Name: rssi_data; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.rssi_data (
+    id integer NOT NULL,
+    point_id text NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.rssi_data OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16471)
+-- Name: rssi_data_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.rssi_data_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.rssi_data_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4953 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: rssi_data_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.rssi_data_id_seq OWNED BY public.rssi_data.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 16487)
+-- Name: rssi_data_list; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.rssi_data_list (
+    id integer NOT NULL,
+    rssi_data_id integer NOT NULL,
+    anchor_id text NOT NULL,
+    rssi_value double precision NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.rssi_data_list OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 16486)
+-- Name: rssi_data_list_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.rssi_data_list_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.rssi_data_list_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 4954 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: rssi_data_list_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.rssi_data_list_id_seq OWNED BY public.rssi_data_list.id;
+
+
+--
+-- TOC entry 4769 (class 2604 OID 16525)
+-- Name: position_aoa id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_aoa ALTER COLUMN id SET DEFAULT nextval('public.position_aoa_id_seq'::regclass);
+
+
+--
+-- TOC entry 4771 (class 2604 OID 16541)
+-- Name: position_rssi id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_rssi ALTER COLUMN id SET DEFAULT nextval('public.position_rssi_id_seq'::regclass);
+
+
+--
+-- TOC entry 4765 (class 2604 OID 16475)
+-- Name: rssi_data id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data ALTER COLUMN id SET DEFAULT nextval('public.rssi_data_id_seq'::regclass);
+
+
+--
+-- TOC entry 4767 (class 2604 OID 16490)
+-- Name: rssi_data_list id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data_list ALTER COLUMN id SET DEFAULT nextval('public.rssi_data_list_id_seq'::regclass);
+
+
+--
+-- TOC entry 4936 (class 0 OID 16397)
+-- Dependencies: 218
+-- Data for Name: anchor; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.anchor (anchor_id, uuid, major, minor, x, y) FROM stdin;
+A2_H	d8ac484e4fbb4b36bf12c249ab83673b	888	202	15	0
+A2_V	d8ac484e4fbb4b36bf12c249ab83673b	111	201	15	0
+A1_H	4e543f43cdb34bbe87948a08bb2681db	888	102	0	0
+A1_V	4e543f43cdb34bbe87948a08bb2681db	111	101	0	0
+\.
+
+
+--
+-- TOC entry 4935 (class 0 OID 16390)
+-- Dependencies: 217
+-- Data for Name: point; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.point (point_id, x, y) FROM stdin;
+F	1.8	15
+E	13.8	4.2
+D	11.1	1.5
+C	4.8	1.2
+B	7.2	4.8
+A	3.3	9.6
+\.
+
+
+--
+-- TOC entry 4942 (class 0 OID 16522)
+-- Dependencies: 224
+-- Data for Name: position_aoa; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.position_aoa (id, rssi_data_id, x, y, error_distance, status, "timestamp") FROM stdin;
+92	111	1.94	2.7	7.03	Unsuccess	2025-03-11 06:28:58
+94	113	6.04	2.78	7.35	Unsuccess	2025-03-11 06:44:21
+95	114	1.31	1.47	8.37	Unsuccess	2025-03-11 06:46:42
+97	116	3.83	2.88	6.74	Unsuccess	2025-03-11 14:32:29
+98	117	-2.85	-1.56	12.74	Unsuccess	2025-03-11 14:33:23
+99	118	12.06	6.81	5.26	Unsuccess	2025-03-11 14:34:09
+100	119	1.93	13.07	9.81	Unsuccess	2025-03-11 14:34:40
+101	120	1.79	0.77	6.75	Unsuccess	2025-03-11 14:34:58
+102	121	15.96	-2.22	11.23	Unsuccess	2025-03-11 14:35:10
+103	122	7.64	5.48	0.81	Success	2025-03-11 14:35:32
+104	123	32.79	-11.95	30.58	Unsuccess	2025-03-11 14:35:43
+105	124	13.4	0.33	8.64	Unsuccess	2025-03-11 14:37:51
+106	125	3.28	8.72	7.67	Unsuccess	2025-03-11 14:38:01
+107	126	2.53	6.72	5.97	Unsuccess	2025-03-11 14:38:13
+108	127	-3.97	10.23	12.59	Unsuccess	2025-03-11 14:38:44
+109	128	14.47	0.36	9.71	Unsuccess	2025-03-11 14:39:00
+110	129	11.72	4.41	2.98	Success	2025-03-11 14:39:50
+111	130	9.96	3.75	2.52	Success	2025-03-11 14:40:05
+112	131	7.86	4.31	4.29	Success	2025-03-11 14:40:22
+113	132	9.35	5.13	4.03	Success	2025-03-11 14:40:39
+114	133	9.28	4.26	3.31	Success	2025-03-11 14:40:57
+115	134	0.81	10.57	14.47	Unsuccess	2025-03-11 14:41:50
+116	135	-0.61	-2.75	16	Unsuccess	2025-03-11 14:42:04
+117	136	0.79	-10.16	19.38	Unsuccess	2025-03-11 14:42:15
+118	137	143.68	222.88	254.34	Unsuccess	2025-03-11 14:42:30
+119	138	0.39	0.85	14.22	Unsuccess	2025-03-11 14:47:18
+120	139	0.08	14.92	1.72	Success	2025-03-11 14:47:42
+121	140	1.57	4.16	10.84	Unsuccess	2025-03-11 14:47:56
+122	141	-0.51	-1.36	16.52	Unsuccess	2025-03-11 14:48:14
+123	142	0.07	0.14	14.96	Unsuccess	2025-03-11 14:48:37
+124	143	-1.97	3.5	8.06	Unsuccess	2025-03-11 14:58:02
+125	144	2.99	3.72	5.89	Unsuccess	2025-03-11 14:58:14
+126	145	2.57	3.2	6.44	Unsuccess	2025-03-11 14:58:26
+127	146	2.12	3.32	6.39	Unsuccess	2025-03-11 14:58:38
+128	147	1.65	1.43	8.33	Unsuccess	2025-03-11 14:59:02
+129	148	63.08	-22.99	62.41	Unsuccess	2025-03-11 15:01:18
+130	149	62.74	-297.81	307.66	Unsuccess	2025-03-11 15:01:28
+131	150	15.68	3.87	8.53	Unsuccess	2025-03-11 15:01:45
+132	151	12.79	2.43	6.07	Unsuccess	2025-03-11 15:03:24
+133	152	12.33	3.76	5.23	Unsuccess	2025-03-11 15:03:44
+134	153	-1.21	-2.21	6.91	Unsuccess	2025-03-11 15:22:41
+135	154	5.82	1.44	1.05	Success	2025-03-11 15:23:04
+136	155	3.33	1.83	1.6	Success	2025-03-11 15:23:15
+137	156	-4.67	6.1	8.7	Unsuccess	2025-03-11 15:23:27
+138	157	17.17	-2.39	12.88	Unsuccess	2025-03-11 15:23:39
+139	158	2.05	5.44	5.05	Unsuccess	2025-03-11 15:24:02
+140	159	3.64	2.35	7.26	Unsuccess	2025-03-11 15:24:40
+141	160	28.41	-13.41	34.06	Unsuccess	2025-03-11 15:25:15
+142	161	1.94	2.7	7.03	Unsuccess	2025-03-11 15:25:53
+52	64	5.52	6.37	2.3	Success	2025-02-18 13:42:08
+53	65	9.21	6.91	2.91	Success	2025-02-18 13:51:20
+54	66	-1.71	-2.28	12.89	Unsuccess	2025-02-18 14:00:06
+55	67	1.01	2.19	7.76	Unsuccess	2025-02-18 14:06:03
+56	68	5.4	3.87	2.03	Success	2025-02-18 14:59:31
+57	69	7.5	7.5	2.72	Success	2025-02-18 15:06:56
+58	70	8.08	5.15	0.95	Success	2025-02-18 15:13:49
+59	71	6.44	4.62	5.89	Unsuccess	2025-02-25 15:58:12
+60	72	1.94	2.7	7.03	Unsuccess	2025-02-25 16:01:03
+61	73	8.75	1.94	9.4	Unsuccess	2025-02-25 16:12:20
+62	74	4.89	4.24	5.59	Unsuccess	2025-02-25 16:15:53
+63	75	8.03	6.97	5.41	Unsuccess	2025-02-25 16:18:31
+64	76	-1	-1.4	11.81	Unsuccess	2025-02-25 16:20:33
+65	77	17.72	-2.47	12.79	Unsuccess	2025-02-25 16:22:56
+66	78	16.08	-1.35	10.8	Unsuccess	2025-02-25 16:25:58
+67	79	16.12	-1.36	10.84	Unsuccess	2025-02-25 16:28:30
+68	80	-5.44	-2.69	14.69	Unsuccess	2025-02-25 16:31:11
+69	81	8.94	3.27	2.32	Success	2025-02-25 16:33:35
+70	82	16.95	-0.5	12.27	Unsuccess	2025-02-25 16:35:51
+71	83	6.15	5.34	4.35	Success	2025-02-25 16:38:05
+72	84	116.63	8.89	112.09	Unsuccess	2025-02-25 16:40:21
+73	85	1.66	5.6	5.41	Unsuccess	2025-02-25 16:42:23
+74	86	6.93	6.01	5.26	Unsuccess	2025-02-25 16:44:41
+75	87	4.6	-6	9.92	Unsuccess	2025-02-25 16:47:16
+76	88	4.86	7.55	8.69	Unsuccess	2025-02-25 16:49:21
+77	89	-8.86	-5.66	21.21	Unsuccess	2025-02-25 16:51:24
+78	90	-13.23	-4.98	25.18	Unsuccess	2025-02-25 16:53:26
+79	91	1.25	0.8	9.87	Unsuccess	2025-02-25 16:56:08
+80	92	-1.41	-4.74	17.64	Unsuccess	2025-02-25 16:57:59
+81	93	11.4	-5.38	9.88	Unsuccess	2025-02-25 17:00:42
+82	94	8.03	6.97	6.4	Unsuccess	2025-02-25 17:03:26
+83	95	10.1	13.46	9.97	Unsuccess	2025-02-25 17:04:49
+84	96	34.44	25.83	29.9	Unsuccess	2025-02-25 22:18:14
+85	97	7.14	13.02	5.7	Unsuccess	2025-02-25 22:24:24
+86	98	0.81	3.66	11.38	Unsuccess	2025-02-25 22:28:22
+87	99	0.7	1.53	13.51	Unsuccess	2025-02-25 22:31:00
+88	100	-0.04	-0.58	15.69	Unsuccess	2025-02-25 22:35:29
+89	101	7.91	10.55	7.56	Unsuccess	2025-02-25 22:38:30
+143	162	7.25	4.68	4.99	Success	2025-03-11 15:26:06
+144	163	-4.66	-4.66	16.92	Unsuccess	2025-03-11 15:26:18
+145	164	4.39	3.29	6.4	Unsuccess	2025-03-11 15:26:28
+146	165	5.2	8.06	8.82	Unsuccess	2025-03-11 15:26:34
+147	166	5.37	7.17	8.06	Unsuccess	2025-03-11 15:26:49
+148	167	7.47	5.6	5.48	Unsuccess	2025-03-11 15:27:00
+149	168	69.16	107.28	117.01	Unsuccess	2025-03-11 15:31:41
+150	169	1.27	1.47	12.82	Unsuccess	2025-03-11 15:31:53
+151	170	-1.71	-2.28	16.81	Unsuccess	2025-03-11 15:32:05
+152	171	0.39	0.85	13.82	Unsuccess	2025-03-11 15:32:18
+153	172	25.03	-23.25	29.66	Unsuccess	2025-03-11 15:33:27
+154	173	2.43	3.24	11.78	Unsuccess	2025-03-11 15:33:59
+155	174	2.98	6.48	8.6	Unsuccess	2025-03-11 15:34:17
+156	175	0.32	0.85	14.23	Unsuccess	2025-03-11 15:34:43
+157	176	-0.33	-0.59	15.73	Unsuccess	2025-03-11 15:34:59
+158	177	6.97	8.03	8.68	Unsuccess	2025-03-11 15:35:09
+159	178	-41.51	30.47	55.06	Unsuccess	2025-03-11 15:36:50
+160	179	11.26	2.78	4.53	Success	2025-03-11 15:38:48
+161	180	12.66	5.43	5.5	Unsuccess	2025-03-11 15:39:24
+162	181	18.92	-2.63	13.88	Unsuccess	2025-03-11 15:39:44
+164	182	6	4.3	3.32	Success	2025-03-18 14:32:41
+165	183	12.62	1	7.82	Unsuccess	2025-03-18 14:35:35
+166	184	8.15	4.6	4.77	Success	2025-03-18 14:35:54
+167	185	4.04	7.36	6.21	Unsuccess	2025-03-18 14:36:12
+168	186	1.28	5.76	5.76	Unsuccess	2025-03-18 14:36:34
+169	187	-1.23	-1.42	12.67	Unsuccess	2025-03-18 14:37:14
+170	188	11.78	8.84	7.37	Unsuccess	2025-03-18 14:37:33
+171	189	8.75	7.59	6.53	Unsuccess	2025-03-18 14:37:47
+172	190	11.13	7.18	5.68	Unsuccess	2025-03-18 14:38:10
+173	191	-154.78	-134.24	214.34	Unsuccess	2025-03-18 14:38:26
+174	192	50.03	50.03	58.42	Unsuccess	2025-03-18 14:39:05
+175	193	-56.67	-56.67	93.12	Unsuccess	2025-03-18 14:39:20
+176	194	8.16	12.66	10.17	Unsuccess	2025-03-18 14:39:36
+177	195	8.93	6.69	5.47	Unsuccess	2025-03-18 14:39:52
+178	196	185.9	161.24	232.98	Unsuccess	2025-03-18 14:40:06
+179	197	0.03	6.28	8.9	Unsuccess	2025-03-18 14:40:36
+180	198	0.12	1.59	13.51	Unsuccess	2025-03-18 14:40:50
+181	199	3.91	26.41	11.6	Unsuccess	2025-03-18 14:41:07
+182	200	8.85	10.2	8.53	Unsuccess	2025-03-18 14:41:22
+183	201	-6.98	3.44	14.52	Unsuccess	2025-03-18 14:41:59
+184	202	15.12	-1	9.82	Unsuccess	2025-03-18 16:21:00
+185	203	1.08	2.87	6.42	Success	2025-03-18 16:41:19
+\.
+
+
+--
+-- TOC entry 4944 (class 0 OID 16538)
+-- Dependencies: 226
+-- Data for Name: position_rssi; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.position_rssi (id, rssi_data_id, x, y, error_distance, status, "timestamp") FROM stdin;
+89	111	3.79	7.69	1.97	Success	2025-03-11 06:28:58
+91	113	27.72	9.46	24.42	Unsuccess	2025-03-11 06:44:22
+92	114	7.5	4.16	6.87	Unsuccess	2025-03-11 06:46:42
+94	116	17.15	18.35	16.38	Unsuccess	2025-03-11 14:32:29
+95	117	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:33:23
+96	118	7.5	8.93	4.14	Success	2025-03-11 14:34:09
+97	119	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:34:40
+98	120	12.33	5.72	5.21	Unsuccess	2025-03-11 14:34:58
+99	121	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:35:10
+100	122	0.65	11.64	9.47	Unsuccess	2025-03-11 14:35:32
+101	123	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:35:43
+102	124	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:37:51
+103	125	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:38:01
+104	126	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:38:13
+105	127	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:38:44
+106	128	7.5	28.31	27.24	Unsuccess	2025-03-11 14:39:00
+107	129	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:39:51
+108	130	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:40:05
+109	131	7.5	20.2	19.04	Unsuccess	2025-03-11 14:40:22
+110	132	20.62	20.8	21.52	Unsuccess	2025-03-11 14:40:39
+111	133	7.5	33.31	32.01	Unsuccess	2025-03-11 14:40:57
+112	134	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:41:50
+113	135	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:42:04
+114	136	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:42:15
+115	137	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:42:30
+116	138	19.64	8.86	18.87	Unsuccess	2025-03-11 14:47:18
+117	139	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:47:42
+118	140	-9.0	7.41	13.2	Unsuccess	2025-03-11 14:47:56
+119	141	9.58	6.65	11.41	Unsuccess	2025-03-11 14:48:14
+120	142	9.13	10.07	8.83	Unsuccess	2025-03-11 14:48:37
+121	143	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 14:58:02
+122	144	1.58	8.43	2.08	Success	2025-03-11 14:58:15
+123	145	2.46	9.69	0.84	Success	2025-03-11 14:58:26
+124	146	4.67	8.84	1.57	Success	2025-03-11 14:58:38
+125	147	16.81	13.47	14.05	Unsuccess	2025-03-11 14:59:02
+126	148	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:01:18
+127	149	2.28	13.4	9.91	Unsuccess	2025-03-11 15:01:28
+128	150	20.52	6.56	13.44	Unsuccess	2025-03-11 15:01:45
+129	151	17.15	18.35	16.81	Unsuccess	2025-03-11 15:03:24
+130	152	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:03:44
+131	153	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:22:42
+132	154	9.13	10.07	9.87	Unsuccess	2025-03-11 15:23:04
+133	155	24.0	7.41	20.18	Unsuccess	2025-03-11 15:23:15
+134	156	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:23:27
+135	157	33.31	42.65	50.31	Unsuccess	2025-03-11 15:23:39
+136	158	7.5	23.97	22.93	Unsuccess	2025-03-11 15:24:02
+49	64	7.5	16.89	12.09	Unsuccess	2025-02-18 13:42:08
+50	65	16.43	8.46	9.93	Unsuccess	2025-02-18 13:51:20
+53	68	-5.52	6.56	12.84	Unsuccess	2025-02-18 14:59:31
+55	70	10.51	15.2	10.91	Unsuccess	2025-02-18 15:13:50
+56	71	-7.37	11.42	10.82	Unsuccess	2025-02-25 15:58:12
+57	72	1.58	8.43	2.08	Success	2025-02-25 16:01:03
+59	74	16.81	13.47	14.05	Unsuccess	2025-02-25 16:15:53
+60	75	20.16	14.99	17.7	Unsuccess	2025-02-25 16:18:31
+61	76	0.93	7.3	3.3	Success	2025-02-25 16:20:33
+65	80	-1.81	13.47	12.5	Unsuccess	2025-02-25 16:31:11
+66	81	11.21	7.69	4.94	Success	2025-02-25 16:33:35
+68	83	-18.31	42.65	47.46	Unsuccess	2025-02-25 16:38:05
+73	88	13.37	2.44	2.46	Success	2025-02-25 16:49:21
+74	89	18.16	3.4	7.31	Unsuccess	2025-02-25 16:51:24
+76	91	18.16	3.4	7.31	Unsuccess	2025-02-25 16:56:08
+83	98	7.5	23.97	10.63	Unsuccess	2025-02-25 22:28:22
+84	99	24.0	7.41	23.46	Unsuccess	2025-02-25 22:31:01
+85	100	7.5	8.93	8.33	Unsuccess	2025-02-25 22:35:30
+137	159	14.6	15.84	12.91	Unsuccess	2025-03-11 15:24:40
+138	160	0.93	7.3	3.3	Success	2025-03-11 15:25:15
+51	66	can't calculate	can't calculate	can't calculate	x,y error	2025-02-18 14:00:06
+52	67	can't calculate	can't calculate	can't calculate	x,y error	2025-02-18 14:06:03
+54	69	can't calculate	can't calculate	can't calculate	x,y error	2025-02-18 15:06:56
+58	73	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:12:20
+62	77	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:22:57
+63	78	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:25:58
+64	79	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:28:30
+67	82	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:35:51
+69	84	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:40:21
+70	85	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:42:23
+71	86	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:44:41
+72	87	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:47:16
+75	90	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:53:26
+77	92	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 16:57:59
+78	93	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 17:00:42
+79	94	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 17:03:26
+80	95	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 17:04:49
+81	96	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 22:18:14
+82	97	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 22:24:25
+86	101	can't calculate	can't calculate	can't calculate	x,y error	2025-02-25 22:38:30
+139	161	-1.43	8.46	4.87	Success	2025-03-11 15:25:53
+140	162	15.06	25.12	23.95	Unsuccess	2025-03-11 15:26:07
+151	173	7.5	20.2	7.72	Unsuccess	2025-03-11 15:33:59
+141	163	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:26:19
+142	164	14.6	15.84	12.91	Unsuccess	2025-03-11 15:26:29
+143	165	-9.71	15.72	25.2	Unsuccess	2025-03-11 15:26:34
+144	166	4.49	15.2	15.21	Unsuccess	2025-03-11 15:26:49
+145	167	-2.15	18.35	21.44	Unsuccess	2025-03-11 15:27:00
+146	168	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:31:41
+147	169	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:31:53
+148	170	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:32:05
+149	171	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:32:18
+150	172	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:33:27
+152	174	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:34:17
+153	175	16.81	13.47	15.09	Unsuccess	2025-03-11 15:34:43
+154	176	20.16	14.99	18.36	Unsuccess	2025-03-11 15:34:59
+155	177	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:35:09
+156	178	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:36:50
+157	179	12.72	13.4	10.22	Unsuccess	2025-03-11 15:38:48
+158	180	11.21	7.69	4.94	Success	2025-03-11 15:39:24
+159	181	can't calculate	can't calculate	can't calculate	x,y error	2025-03-11 15:39:44
+161	182	-5.16	14.99	17.01	Unsuccess	2025-03-18 14:32:41
+162	183	7.5	23.97	22.93	Unsuccess	2025-03-18 14:35:35
+163	184	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:35:54
+164	185	7.5	23.97	22.93	Unsuccess	2025-03-18 14:36:12
+165	186	9.13	10.07	9.87	Unsuccess	2025-03-18 14:36:34
+166	187	15.34	3.97	4.91	Success	2025-03-18 14:37:14
+167	188	18.35	2.15	7.28	Unsuccess	2025-03-18 14:37:33
+168	189	-2.77	29.15	30.93	Unsuccess	2025-03-18 14:37:47
+169	190	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:38:10
+170	191	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:38:26
+171	192	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:39:05
+172	193	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:39:20
+173	194	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:39:36
+174	195	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:39:52
+175	196	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:40:06
+176	197	-12.72	9.46	15.54	Unsuccess	2025-03-18 14:40:36
+177	198	7.5	20.2	7.72	Unsuccess	2025-03-18 14:40:50
+178	199	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:41:07
+179	200	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:41:22
+180	201	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 14:41:59
+181	202	can't calculate	can't calculate	can't calculate	x,y error	2025-03-18 16:21:00
+182	203	can't calculate	can't calculate	can't calculate	Unsuccess	2025-03-18 16:41:19
+\.
+
+
+--
+-- TOC entry 4938 (class 0 OID 16472)
+-- Dependencies: 220
+-- Data for Name: rssi_data; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.rssi_data (id, point_id, "timestamp") FROM stdin;
+78	B	2025-02-25 16:25:58
+79	B	2025-02-25 16:28:29
+80	B	2025-02-25 16:31:10
+81	B	2025-02-25 16:33:34
+82	C	2025-02-25 16:35:50
+83	C	2025-02-25 16:38:05
+84	C	2025-02-25 16:40:19
+85	C	2025-02-25 16:42:22
+86	C	2025-02-25 16:44:40
+87	D	2025-02-25 16:47:15
+88	D	2025-02-25 16:49:20
+89	D	2025-02-25 16:51:23
+90	D	2025-02-25 16:53:26
+91	D	2025-02-25 16:56:07
+92	E	2025-02-25 16:57:57
+93	E	2025-02-25 17:00:41
+94	E	2025-02-25 17:03:25
+95	E	2025-02-25 17:04:48
+96	E	2025-02-25 22:18:13
+97	F	2025-02-25 22:24:24
+98	F	2025-02-25 22:28:21
+99	F	2025-02-25 22:30:59
+100	F	2025-02-25 22:35:29
+101	F	2025-02-25 22:38:29
+111	A	2025-03-11 06:28:57
+113	A	2025-03-11 06:44:21
+114	A	2025-03-11 06:46:42
+116	A	2025-03-11 14:32:28
+117	A	2025-03-11 14:33:22
+64	B	2025-02-18 13:42:07
+65	B	2025-02-18 13:51:19
+66	A	2025-02-18 14:00:05
+67	A	2025-02-18 14:06:02
+68	B	2025-02-18 14:59:30
+69	B	2025-02-18 15:06:55
+70	B	2025-02-18 15:13:47
+71	A	2025-02-25 15:58:11
+72	A	2025-02-25 16:01:02
+73	A	2025-02-25 16:12:19
+74	A	2025-02-25 16:15:52
+75	A	2025-02-25 16:18:30
+76	A	2025-02-25 16:20:33
+77	B	2025-02-25 16:22:56
+118	B	2025-03-11 14:34:08
+119	B	2025-03-11 14:34:39
+120	B	2025-03-11 14:34:57
+121	B	2025-03-11 14:35:10
+122	B	2025-03-11 14:35:31
+123	C	2025-03-11 14:35:43
+124	C	2025-03-11 14:37:49
+125	C	2025-03-11 14:38:00
+126	C	2025-03-11 14:38:12
+127	C	2025-03-11 14:38:43
+128	D	2025-03-11 14:38:59
+129	D	2025-03-11 14:39:50
+130	D	2025-03-11 14:40:04
+131	D	2025-03-11 14:40:22
+132	D	2025-03-11 14:40:38
+133	E	2025-03-11 14:40:56
+134	E	2025-03-11 14:41:49
+135	E	2025-03-11 14:42:03
+136	E	2025-03-11 14:42:15
+137	E	2025-03-11 14:42:29
+138	F	2025-03-11 14:47:17
+139	F	2025-03-11 14:47:41
+140	F	2025-03-11 14:47:55
+141	F	2025-03-11 14:48:14
+142	F	2025-03-11 14:48:37
+143	A	2025-03-11 14:58:02
+144	A	2025-03-11 14:58:14
+145	A	2025-03-11 14:58:25
+146	A	2025-03-11 14:58:37
+147	A	2025-03-11 14:59:02
+148	B	2025-03-11 15:01:17
+149	B	2025-03-11 15:01:27
+150	B	2025-03-11 15:01:44
+151	B	2025-03-11 15:03:23
+152	B	2025-03-11 15:03:44
+153	C	2025-03-11 15:22:41
+154	C	2025-03-11 15:23:04
+155	C	2025-03-11 15:23:15
+156	A	2025-03-11 15:23:27
+157	C	2025-03-11 15:23:38
+158	C	2025-03-11 15:24:02
+159	A	2025-03-11 15:24:40
+160	A	2025-03-11 15:25:15
+161	A	2025-03-11 15:25:53
+162	D	2025-03-11 15:26:06
+163	D	2025-03-11 15:26:18
+164	A	2025-03-11 15:26:28
+165	D	2025-03-11 15:26:33
+166	D	2025-03-11 15:26:48
+167	D	2025-03-11 15:27:00
+168	E	2025-03-11 15:31:40
+169	E	2025-03-11 15:31:53
+170	E	2025-03-11 15:32:04
+171	E	2025-03-11 15:32:18
+172	E	2025-03-11 15:33:26
+173	F	2025-03-11 15:33:58
+174	F	2025-03-11 15:34:16
+175	F	2025-03-11 15:34:42
+176	F	2025-03-11 15:34:59
+177	F	2025-03-11 15:35:08
+178	B	2025-03-11 15:36:49
+179	B	2025-03-11 15:38:47
+180	B	2025-03-11 15:39:23
+181	B	2025-03-11 15:39:43
+182	C	2025-03-18 14:32:40
+183	C	2025-03-18 14:35:35
+184	C	2025-03-18 14:35:54
+185	C	2025-03-18 14:36:12
+186	C	2025-03-18 14:36:33
+187	D	2025-03-18 14:37:13
+188	D	2025-03-18 14:37:32
+189	D	2025-03-18 14:37:47
+190	D	2025-03-18 14:38:09
+191	D	2025-03-18 14:38:25
+192	E	2025-03-18 14:39:04
+193	E	2025-03-18 14:39:19
+194	E	2025-03-18 14:39:36
+195	E	2025-03-18 14:39:51
+196	E	2025-03-18 14:40:05
+197	F	2025-03-18 14:40:36
+198	F	2025-03-18 14:40:49
+199	F	2025-03-18 14:41:07
+200	F	2025-03-18 14:41:22
+201	F	2025-03-18 14:41:58
+202	B	2025-03-18 16:20:59
+203	B	2025-03-18 16:41:18
+\.
+
+
+--
+-- TOC entry 4940 (class 0 OID 16487)
+-- Dependencies: 222
+-- Data for Name: rssi_data_list; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.rssi_data_list (id, rssi_data_id, anchor_id, rssi_value, "timestamp") FROM stdin;
+265	78	A1_V	-73	2025-02-25 16:25:58
+267	78	A2_V	-72	2025-02-25 16:25:58
+269	79	A1_V	-73	2025-02-25 16:28:29
+271	79	A2_V	-75	2025-02-25 16:28:30
+273	80	A1_V	-64	2025-02-25 16:31:11
+275	80	A2_V	-74	2025-02-25 16:31:11
+277	81	A1_V	-64	2025-02-25 16:33:34
+279	81	A2_V	-68	2025-02-25 16:33:35
+281	82	A1_V	-72	2025-02-25 16:35:51
+283	82	A2_V	-76	2025-02-25 16:35:51
+285	83	A1_V	-72	2025-02-25 16:38:05
+287	83	A2_V	-80	2025-02-25 16:38:05
+289	84	A1_V	-72	2025-02-25 16:40:19
+291	84	A2_V	-68	2025-02-25 16:40:19
+293	85	A1_V	-66	2025-02-25 16:42:23
+295	85	A2_V	-77	2025-02-25 16:42:23
+297	86	A1_V	-66	2025-02-25 16:44:40
+299	86	A2_V	-79	2025-02-25 16:44:40
+301	87	A1_V	-87	2025-02-25 16:47:15
+303	87	A2_V	-63	2025-02-25 16:47:16
+305	88	A1_V	-64	2025-02-25 16:49:20
+307	88	A2_V	-61	2025-02-25 16:49:21
+309	89	A1_V	-66	2025-02-25 16:51:24
+311	89	A2_V	-64	2025-02-25 16:51:24
+313	90	A1_V	-68	2025-02-25 16:53:26
+315	90	A2_V	-60	2025-02-25 16:53:26
+317	91	A1_V	-66	2025-02-25 16:56:07
+319	91	A2_V	-64	2025-02-25 16:56:07
+321	92	A1_V	-69	2025-02-25 16:57:59
+323	92	A2_V	-64	2025-02-25 16:57:59
+325	93	A1_V	-68	2025-02-25 17:00:42
+327	93	A2_V	-61	2025-02-25 17:00:42
+329	94	A1_V	-77	2025-02-25 17:03:25
+331	94	A2_V	-67	2025-02-25 17:03:25
+333	95	A1_V	-76	2025-02-25 17:04:48
+335	95	A2_V	-59	2025-02-25 17:04:48
+337	96	A1_V	-75	2025-02-25 22:18:13
+339	96	A2_V	-58	2025-02-25 22:18:14
+341	97	A1_V	-65	2025-02-25 22:24:24
+343	97	A2_V	-86	2025-02-25 22:24:24
+345	98	A1_V	-68	2025-02-25 22:28:21
+347	98	A2_V	-75	2025-02-25 22:28:21
+349	99	A1_V	-68	2025-02-25 22:30:59
+351	99	A2_V	-70	2025-02-25 22:31:00
+353	100	A1_V	-63	2025-02-25 22:35:29
+355	100	A2_V	-70	2025-02-25 22:35:29
+357	101	A1_V	-67	2025-02-25 22:38:29
+359	101	A2_V	-91	2025-02-25 22:38:30
+373	111	A1_V	-61	2025-03-11 06:28:57
+375	111	A2_V	-71	2025-03-11 06:28:57
+381	113	A1_V	-69	2025-03-11 06:44:21
+383	113	A2_V	-72	2025-03-11 06:44:21
+385	114	A1_V	-61	2025-03-11 06:46:42
+387	114	A2_V	-68	2025-03-11 06:46:42
+393	116	A1_V	-68	2025-03-11 14:32:28
+395	116	A2_V	-73	2025-03-11 14:32:29
+397	117	A1_V	-68	2025-03-11 14:33:23
+399	117	A2_V	-65	2025-03-11 14:33:23
+401	118	A1_V	-63	2025-03-11 14:34:08
+403	118	A2_V	-70	2025-03-11 14:34:08
+405	119	A1_V	-68	2025-03-11 14:34:40
+407	119	A2_V	-66	2025-03-11 14:34:40
+409	120	A1_V	-64	2025-03-11 14:34:57
+411	120	A2_V	-66	2025-03-11 14:34:57
+413	121	A1_V	-74	2025-03-11 14:35:10
+415	121	A2_V	-70	2025-03-11 14:35:10
+417	122	A1_V	-63	2025-03-11 14:35:32
+419	122	A2_V	-73	2025-03-11 14:35:32
+421	123	A1_V	-74	2025-03-11 14:35:43
+422	123	A1_H	-58	2025-03-11 14:35:43
+423	123	A2_V	-70	2025-03-11 14:35:43
+424	123	A2_H	-65	2025-03-11 14:35:43
+425	124	A1_V	-69	2025-03-11 14:37:49
+426	124	A1_H	-55	2025-03-11 14:37:50
+427	124	A2_V	-71	2025-03-11 14:37:50
+428	124	A2_H	-74	2025-03-11 14:37:51
+429	125	A1_V	-65	2025-03-11 14:38:00
+430	125	A1_H	-71	2025-03-11 14:38:00
+431	125	A2_V	-77	2025-03-11 14:38:00
+432	125	A2_H	-71	2025-03-11 14:38:01
+433	126	A1_V	-65	2025-03-11 14:38:12
+434	126	A1_H	-71	2025-03-11 14:38:13
+435	126	A2_V	-77	2025-03-11 14:38:13
+436	126	A2_H	-74	2025-03-11 14:38:13
+437	127	A1_V	-84	2025-03-11 14:38:43
+438	127	A1_H	-56	2025-03-11 14:38:43
+439	127	A2_V	-77	2025-03-11 14:38:43
+440	127	A2_H	-74	2025-03-11 14:38:43
+441	128	A1_V	-69	2025-03-11 14:38:59
+442	128	A1_H	-55	2025-03-11 14:38:59
+443	128	A2_V	-76	2025-03-11 14:39:00
+444	128	A2_H	-71	2025-03-11 14:39:00
+445	129	A1_V	-70	2025-03-11 14:39:50
+446	129	A1_H	-64	2025-03-11 14:39:50
+447	129	A2_V	-65	2025-03-11 14:39:50
+448	129	A2_H	-67	2025-03-11 14:39:50
+449	130	A1_V	-69	2025-03-11 14:40:05
+450	130	A1_H	-63	2025-03-11 14:40:05
+451	130	A2_V	-65	2025-03-11 14:40:05
+452	130	A2_H	-66	2025-03-11 14:40:05
+453	131	A1_V	-67	2025-03-11 14:40:22
+454	131	A1_H	-63	2025-03-11 14:40:22
+455	131	A2_V	-74	2025-03-11 14:40:22
+456	131	A2_H	-70	2025-03-11 14:40:22
+457	132	A1_V	-69	2025-03-11 14:40:38
+458	132	A1_H	-65	2025-03-11 14:40:39
+459	132	A2_V	-74	2025-03-11 14:40:39
+460	132	A2_H	-66	2025-03-11 14:40:39
+461	133	A1_V	-70	2025-03-11 14:40:56
+462	133	A1_H	-65	2025-03-11 14:40:56
+463	133	A2_V	-77	2025-03-11 14:40:56
+464	133	A2_H	-71	2025-03-11 14:40:57
+465	134	A1_V	-68	2025-03-11 14:41:49
+466	134	A1_H	-78	2025-03-11 14:41:49
+467	134	A2_V	-59	2025-03-11 14:41:50
+468	134	A2_H	-60	2025-03-11 14:41:50
+469	135	A1_V	-67	2025-03-11 14:42:04
+470	135	A1_H	-75	2025-03-11 14:42:04
+471	135	A2_V	-58	2025-03-11 14:42:04
+472	135	A2_H	-67	2025-03-11 14:42:04
+473	136	A1_V	-71	2025-03-11 14:42:15
+474	136	A1_H	-94	2025-03-11 14:42:15
+475	136	A2_V	-62	2025-03-11 14:42:15
+476	136	A2_H	-82	2025-03-11 14:42:15
+266	78	A1_H	-57	2025-02-25 16:25:58
+268	78	A2_H	-60	2025-02-25 16:25:58
+270	79	A1_H	-57	2025-02-25 16:28:29
+272	79	A2_H	-64	2025-02-25 16:28:30
+274	80	A1_H	-58	2025-02-25 16:31:11
+276	80	A2_H	-60	2025-02-25 16:31:11
+278	81	A1_H	-56	2025-02-25 16:33:34
+280	81	A2_H	-65	2025-02-25 16:33:35
+282	82	A1_H	-57	2025-02-25 16:35:51
+284	82	A2_H	-78	2025-02-25 16:35:51
+286	83	A1_H	-71	2025-02-25 16:38:05
+288	83	A2_H	-76	2025-02-25 16:38:05
+290	84	A1_H	-62	2025-02-25 16:40:19
+292	84	A2_H	-77	2025-02-25 16:40:20
+294	85	A1_H	-73	2025-02-25 16:42:23
+296	85	A2_H	-76	2025-02-25 16:42:23
+298	86	A1_H	-65	2025-02-25 16:44:40
+300	86	A2_H	-73	2025-02-25 16:44:41
+302	87	A1_H	-63	2025-02-25 16:47:15
+304	87	A2_H	-60	2025-02-25 16:47:16
+306	88	A1_H	-67	2025-02-25 16:49:20
+308	88	A2_H	-62	2025-02-25 16:49:21
+310	89	A1_H	-62	2025-02-25 16:51:24
+312	89	A2_H	-62	2025-02-25 16:51:24
+314	90	A1_H	-62	2025-02-25 16:53:26
+316	90	A2_H	-69	2025-02-25 16:53:26
+318	91	A1_H	-62	2025-02-25 16:56:07
+320	91	A2_H	-70	2025-02-25 16:56:08
+322	92	A1_H	-76	2025-02-25 16:57:59
+324	92	A2_H	-77	2025-02-25 16:57:59
+326	93	A1_H	-95	2025-02-25 17:00:42
+328	93	A2_H	-82	2025-02-25 17:00:42
+330	94	A1_H	-76	2025-02-25 17:03:25
+332	94	A2_H	-67	2025-02-25 17:03:25
+334	95	A1_H	-78	2025-02-25 17:04:48
+336	95	A2_H	-62	2025-02-25 17:04:48
+338	96	A1_H	-73	2025-02-25 22:18:14
+340	96	A2_H	-73	2025-02-25 22:18:14
+342	97	A1_H	-69	2025-02-25 22:24:24
+344	97	A2_H	-72	2025-02-25 22:24:24
+346	98	A1_H	-76	2025-02-25 22:28:21
+348	98	A2_H	-77	2025-02-25 22:28:22
+350	99	A1_H	-73	2025-02-25 22:31:00
+352	99	A2_H	-75	2025-02-25 22:31:00
+354	100	A1_H	-73	2025-02-25 22:35:29
+356	100	A2_H	-78	2025-02-25 22:35:29
+358	101	A1_H	-69	2025-02-25 22:38:29
+360	101	A2_H	-78	2025-02-25 22:38:30
+374	111	A1_H	-64	2025-03-11 06:28:57
+376	111	A2_H	-74	2025-03-11 06:28:57
+382	113	A1_H	-64	2025-03-11 06:44:21
+384	113	A2_H	-73	2025-03-11 06:44:21
+386	114	A1_H	-62	2025-03-11 06:46:42
+388	114	A2_H	-73	2025-03-11 06:46:42
+394	116	A1_H	-66	2025-03-11 14:32:28
+396	116	A2_H	-75	2025-03-11 14:32:29
+209	64	A2_H	-68	2025-02-18 13:42:07
+210	64	A1_V	-66	2025-02-18 13:42:07
+211	64	A1_H	-67	2025-02-18 13:42:07
+212	64	A2_V	-73	2025-02-18 13:42:07
+213	65	A1_H	-64	2025-02-18 13:51:19
+214	65	A1_V	-66	2025-02-18 13:51:19
+215	65	A2_H	-59	2025-02-18 13:51:20
+216	65	A2_V	-68	2025-02-18 13:51:20
+217	66	A2_V	-68	2025-02-18 14:00:06
+218	66	A1_H	-76	2025-02-18 14:00:06
+219	66	A1_V	-74	2025-02-18 14:00:06
+220	66	A2_H	-78	2025-02-18 14:00:06
+221	67	A2_H	-69	2025-02-18 14:06:02
+222	67	A1_H	-80	2025-02-18 14:06:02
+223	67	A2_V	-65	2025-02-18 14:06:03
+224	67	A1_V	-75	2025-02-18 14:06:03
+225	68	A2_H	-61	2025-02-18 14:59:30
+226	68	A1_H	-58	2025-02-18 14:59:30
+227	68	A1_V	-61	2025-02-18 14:59:30
+228	68	A2_V	-74	2025-02-18 14:59:30
+229	69	A2_V	-61	2025-02-18 15:06:56
+230	69	A1_V	-63	2025-02-18 15:06:56
+231	69	A1_H	-63	2025-02-18 15:06:56
+232	69	A2_H	-61	2025-02-18 15:06:56
+233	70	A1_H	-62	2025-02-18 15:13:48
+234	70	A2_H	-66	2025-02-18 15:13:48
+235	70	A1_V	-66	2025-02-18 15:13:48
+236	70	A2_V	-72	2025-02-18 15:13:49
+237	71	A1_V	-64	2025-02-25 15:58:11
+238	71	A1_H	-61	2025-02-25 15:58:11
+239	71	A2_V	-75	2025-02-25 15:58:12
+240	71	A2_H	-72	2025-02-25 15:58:12
+241	72	A1_V	-61	2025-02-25 16:01:02
+242	72	A1_H	-64	2025-02-25 16:01:02
+243	72	A2_V	-72	2025-02-25 16:01:02
+244	72	A2_H	-75	2025-02-25 16:01:02
+245	73	A1_V	-70	2025-02-25 16:12:19
+246	73	A1_H	-62	2025-02-25 16:12:19
+247	73	A2_V	-72	2025-02-25 16:12:19
+248	73	A2_H	-73	2025-02-25 16:12:19
+249	74	A1_V	-67	2025-02-25 16:15:52
+250	74	A1_H	-66	2025-02-25 16:15:53
+251	74	A2_V	-71	2025-02-25 16:15:53
+252	74	A2_H	-70	2025-02-25 16:15:53
+253	75	A1_V	-68	2025-02-25 16:18:30
+254	75	A1_H	-67	2025-02-25 16:18:30
+255	75	A2_V	-72	2025-02-25 16:18:31
+256	75	A2_H	-72	2025-02-25 16:18:31
+257	76	A1_V	-60	2025-02-25 16:20:33
+258	76	A1_H	-63	2025-02-25 16:20:33
+259	76	A2_V	-72	2025-02-25 16:20:33
+260	76	A2_H	-81	2025-02-25 16:20:33
+261	77	A1_V	-74	2025-02-25 16:22:56
+262	77	A1_H	-57	2025-02-25 16:22:56
+263	77	A2_V	-74	2025-02-25 16:22:56
+264	77	A2_H	-66	2025-02-25 16:22:56
+398	117	A1_H	-64	2025-03-11 14:33:23
+400	117	A2_H	-74	2025-03-11 14:33:23
+402	118	A1_H	-58	2025-03-11 14:34:08
+404	118	A2_H	-62	2025-03-11 14:34:09
+406	119	A1_H	-77	2025-03-11 14:34:40
+408	119	A2_H	-66	2025-03-11 14:34:40
+410	120	A1_H	-57	2025-03-11 14:34:57
+412	120	A2_H	-65	2025-03-11 14:34:58
+414	121	A1_H	-57	2025-03-11 14:35:10
+416	121	A2_H	-62	2025-03-11 14:35:10
+418	122	A1_H	-60	2025-03-11 14:35:32
+420	122	A2_H	-67	2025-03-11 14:35:32
+477	137	A1_V	-69	2025-03-11 14:42:29
+478	137	A1_H	-72	2025-03-11 14:42:29
+479	137	A2_V	-62	2025-03-11 14:42:29
+480	137	A2_H	-68	2025-03-11 14:42:29
+481	138	A1_V	-67	2025-03-11 14:47:18
+482	138	A1_H	-72	2025-03-11 14:47:18
+483	138	A2_V	-69	2025-03-11 14:47:18
+484	138	A2_H	-75	2025-03-11 14:47:18
+485	139	A1_V	-64	2025-03-11 14:47:41
+486	139	A1_H	-75	2025-03-11 14:47:42
+487	139	A2_V	-76	2025-03-11 14:47:42
+488	139	A2_H	-76	2025-03-11 14:47:42
+489	140	A1_V	-63	2025-03-11 14:47:55
+490	140	A1_H	-69	2025-03-11 14:47:55
+491	140	A2_V	-75	2025-03-11 14:47:56
+492	140	A2_H	-76	2025-03-11 14:47:56
+493	141	A1_V	-63	2025-03-11 14:48:14
+494	141	A1_H	-69	2025-03-11 14:48:14
+495	141	A2_V	-68	2025-03-11 14:48:14
+496	141	A2_H	-77	2025-03-11 14:48:14
+497	142	A1_V	-64	2025-03-11 14:48:37
+498	142	A1_H	-69	2025-03-11 14:48:37
+499	142	A2_V	-70	2025-03-11 14:48:37
+500	142	A2_H	-77	2025-03-11 14:48:37
+501	143	A1_V	-91	2025-03-11 14:58:02
+502	143	A1_H	-65	2025-03-11 14:58:02
+503	143	A2_V	-68	2025-03-11 14:58:02
+504	143	A2_H	-71	2025-03-11 14:58:02
+505	144	A1_V	-61	2025-03-11 14:58:14
+506	144	A1_H	-63	2025-03-11 14:58:14
+507	144	A2_V	-72	2025-03-11 14:58:14
+508	144	A2_H	-73	2025-03-11 14:58:14
+509	145	A1_V	-62	2025-03-11 14:58:26
+510	145	A1_H	-64	2025-03-11 14:58:26
+511	145	A2_V	-72	2025-03-11 14:58:26
+512	145	A2_H	-74	2025-03-11 14:58:26
+513	146	A1_V	-62	2025-03-11 14:58:37
+514	146	A1_H	-66	2025-03-11 14:58:37
+515	146	A2_V	-71	2025-03-11 14:58:37
+516	146	A2_H	-73	2025-03-11 14:58:37
+517	147	A1_V	-67	2025-03-11 14:59:02
+518	147	A1_H	-66	2025-03-11 14:59:02
+519	147	A2_V	-71	2025-03-11 14:59:02
+520	147	A2_H	-76	2025-03-11 14:59:02
+521	148	A1_V	-76	2025-03-11 15:01:17
+522	148	A1_H	-60	2025-03-11 15:01:18
+523	148	A2_V	-68	2025-03-11 15:01:18
+524	148	A2_H	-66	2025-03-11 15:01:18
+525	149	A1_V	-64	2025-03-11 15:01:28
+526	149	A1_H	-78	2025-03-11 15:01:28
+527	149	A2_V	-73	2025-03-11 15:01:28
+528	149	A2_H	-62	2025-03-11 15:01:28
+529	150	A1_V	-67	2025-03-11 15:01:44
+530	150	A1_H	-57	2025-03-11 15:01:44
+531	150	A2_V	-68	2025-03-11 15:01:45
+532	150	A2_H	-62	2025-03-11 15:01:45
+533	151	A1_V	-68	2025-03-11 15:03:23
+534	151	A1_H	-57	2025-03-11 15:03:23
+535	151	A2_V	-73	2025-03-11 15:03:23
+536	151	A2_H	-63	2025-03-11 15:03:24
+537	152	A1_V	-67	2025-03-11 15:03:44
+538	152	A1_H	-58	2025-03-11 15:03:44
+539	152	A2_V	-78	2025-03-11 15:03:44
+540	152	A2_H	-60	2025-03-11 15:03:44
+541	153	A1_V	-69	2025-03-11 15:22:41
+542	153	A1_H	-73	2025-03-11 15:22:41
+543	153	A2_V	-68	2025-03-11 15:22:41
+544	153	A2_H	-78	2025-03-11 15:22:41
+545	154	A1_V	-64	2025-03-11 15:23:04
+546	154	A1_H	-54	2025-03-11 15:23:04
+547	154	A2_V	-70	2025-03-11 15:23:04
+548	154	A2_H	-74	2025-03-11 15:23:04
+549	155	A1_V	-68	2025-03-11 15:23:15
+550	155	A1_H	-64	2025-03-11 15:23:15
+551	155	A2_V	-70	2025-03-11 15:23:15
+552	155	A2_H	-74	2025-03-11 15:23:15
+553	156	A1_V	-87	2025-03-11 15:23:27
+554	156	A1_H	-63	2025-03-11 15:23:27
+555	156	A2_V	-71	2025-03-11 15:23:27
+556	156	A2_H	-72	2025-03-11 15:23:27
+557	157	A1_V	-73	2025-03-11 15:23:39
+558	157	A1_H	-56	2025-03-11 15:23:39
+559	157	A2_V	-79	2025-03-11 15:23:39
+560	157	A2_H	-69	2025-03-11 15:23:39
+561	158	A1_V	-68	2025-03-11 15:24:02
+562	158	A1_H	-74	2025-03-11 15:24:02
+563	158	A2_V	-75	2025-03-11 15:24:02
+564	158	A2_H	-74	2025-03-11 15:24:02
+565	159	A1_V	-67	2025-03-11 15:24:40
+566	159	A1_H	-64	2025-03-11 15:24:40
+567	159	A2_V	-72	2025-03-11 15:24:40
+568	159	A2_H	-75	2025-03-11 15:24:40
+569	160	A1_V	-60	2025-03-11 15:25:15
+570	160	A1_H	-87	2025-03-11 15:25:15
+571	160	A2_V	-72	2025-03-11 15:25:15
+572	160	A2_H	-72	2025-03-11 15:25:15
+573	161	A1_V	-61	2025-03-11 15:25:53
+574	161	A1_H	-64	2025-03-11 15:25:53
+575	161	A2_V	-73	2025-03-11 15:25:53
+576	161	A2_H	-76	2025-03-11 15:25:53
+577	162	A1_V	-69	2025-03-11 15:26:06
+578	162	A1_H	-66	2025-03-11 15:26:06
+579	162	A2_V	-75	2025-03-11 15:26:06
+580	162	A2_H	-71	2025-03-11 15:26:06
+581	163	A1_V	-67	2025-03-11 15:26:18
+582	163	A1_H	-67	2025-03-11 15:26:18
+583	163	A2_V	-65	2025-03-11 15:26:18
+584	163	A2_H	-63	2025-03-11 15:26:18
+585	164	A1_V	-67	2025-03-11 15:26:28
+586	164	A1_H	-65	2025-03-11 15:26:28
+587	164	A2_V	-72	2025-03-11 15:26:28
+588	164	A2_H	-73	2025-03-11 15:26:28
+589	165	A1_V	-66	2025-03-11 15:26:33
+590	165	A1_H	-69	2025-03-11 15:26:34
+591	165	A2_V	-76	2025-03-11 15:26:34
+592	165	A2_H	-69	2025-03-11 15:26:34
+593	166	A1_V	-65	2025-03-11 15:26:48
+594	166	A1_H	-67	2025-03-11 15:26:48
+595	166	A2_V	-73	2025-03-11 15:26:49
+596	166	A2_H	-67	2025-03-11 15:26:49
+597	167	A1_V	-66	2025-03-11 15:27:00
+598	167	A1_H	-64	2025-03-11 15:27:00
+599	167	A2_V	-75	2025-03-11 15:27:00
+600	167	A2_H	-69	2025-03-11 15:27:00
+601	168	A1_V	-69	2025-03-11 15:31:41
+602	168	A1_H	-72	2025-03-11 15:31:41
+603	168	A2_V	-82	2025-03-11 15:31:41
+604	168	A2_H	-60	2025-03-11 15:31:41
+605	169	A1_V	-76	2025-03-11 15:31:53
+606	169	A1_H	-77	2025-03-11 15:31:53
+607	169	A2_V	-75	2025-03-11 15:31:53
+608	169	A2_H	-80	2025-03-11 15:31:53
+609	170	A1_V	-75	2025-03-11 15:32:04
+610	170	A1_H	-77	2025-03-11 15:32:04
+611	170	A2_V	-71	2025-03-11 15:32:04
+612	170	A2_H	-81	2025-03-11 15:32:04
+613	171	A1_V	-68	2025-03-11 15:32:18
+614	171	A1_H	-73	2025-03-11 15:32:18
+615	171	A2_V	-58	2025-03-11 15:32:18
+616	171	A2_H	-57	2025-03-11 15:32:18
+617	172	A1_V	-76	2025-03-11 15:33:26
+618	172	A1_H	-93	2025-03-11 15:33:27
+619	172	A2_V	-68	2025-03-11 15:33:27
+620	172	A2_H	-60	2025-03-11 15:33:27
+621	173	A1_V	-67	2025-03-11 15:33:58
+622	173	A1_H	-69	2025-03-11 15:33:58
+623	173	A2_V	-74	2025-03-11 15:33:58
+624	173	A2_H	-76	2025-03-11 15:33:58
+625	174	A1_V	-63	2025-03-11 15:34:16
+626	174	A1_H	-68	2025-03-11 15:34:16
+627	174	A2_V	-80	2025-03-11 15:34:17
+628	174	A2_H	-77	2025-03-11 15:34:17
+629	175	A1_V	-67	2025-03-11 15:34:42
+630	175	A1_H	-73	2025-03-11 15:34:42
+631	175	A2_V	-71	2025-03-11 15:34:42
+632	175	A2_H	-77	2025-03-11 15:34:42
+633	176	A1_V	-68	2025-03-11 15:34:59
+634	176	A1_H	-72	2025-03-11 15:34:59
+635	176	A2_V	-72	2025-03-11 15:34:59
+636	176	A2_H	-80	2025-03-11 15:34:59
+637	177	A1_V	-68	2025-03-11 15:35:08
+638	177	A1_H	-69	2025-03-11 15:35:09
+639	177	A2_V	-88	2025-03-11 15:35:09
+640	177	A2_H	-79	2025-03-11 15:35:09
+641	178	A1_V	-78	2025-03-11 15:36:49
+642	178	A1_H	-58	2025-03-11 15:36:49
+643	178	A2_V	-68	2025-03-11 15:36:49
+644	178	A2_H	-65	2025-03-11 15:36:50
+645	179	A1_V	-66	2025-03-11 15:38:47
+646	179	A1_H	-56	2025-03-11 15:38:47
+647	179	A2_V	-71	2025-03-11 15:38:47
+648	179	A2_H	-65	2025-03-11 15:38:48
+649	180	A1_V	-64	2025-03-11 15:39:24
+650	180	A1_H	-57	2025-03-11 15:39:24
+651	180	A2_V	-68	2025-03-11 15:39:24
+652	180	A2_H	-60	2025-03-11 15:39:24
+653	181	A1_V	-74	2025-03-11 15:39:43
+654	181	A1_H	-57	2025-03-11 15:39:43
+655	181	A2_V	-71	2025-03-11 15:39:43
+656	181	A2_H	-66	2025-03-11 15:39:44
+661	182	A1_V	-65	2025-03-18 14:32:40
+662	182	A1_H	-62	2025-03-18 14:32:40
+663	182	A2_V	-75	2025-03-18 14:32:41
+664	182	A2_H	-73	2025-03-18 14:32:41
+665	183	A1_V	-68	2025-03-18 14:35:35
+666	183	A1_H	-55	2025-03-18 14:35:35
+667	183	A2_V	-75	2025-03-18 14:35:35
+668	183	A2_H	-74	2025-03-18 14:35:35
+669	184	A1_V	-65	2025-03-18 14:35:54
+670	184	A1_H	-60	2025-03-18 14:35:54
+671	184	A2_V	-79	2025-03-18 14:35:54
+672	184	A2_H	-74	2025-03-18 14:35:54
+673	185	A1_V	-68	2025-03-18 14:36:12
+674	185	A1_H	-72	2025-03-18 14:36:12
+675	185	A2_V	-75	2025-03-18 14:36:12
+676	185	A2_H	-70	2025-03-18 14:36:12
+677	186	A1_V	-64	2025-03-18 14:36:34
+678	186	A1_H	-72	2025-03-18 14:36:34
+679	186	A2_V	-70	2025-03-18 14:36:34
+680	186	A2_H	-69	2025-03-18 14:36:34
+681	187	A1_V	-65	2025-03-18 14:37:13
+682	187	A1_H	-66	2025-03-18 14:37:13
+683	187	A2_V	-63	2025-03-18 14:37:13
+684	187	A2_H	-72	2025-03-18 14:37:14
+685	188	A1_V	-66	2025-03-18 14:37:32
+686	188	A1_H	-64	2025-03-18 14:37:33
+687	188	A2_V	-63	2025-03-18 14:37:33
+688	188	A2_H	-66	2025-03-18 14:37:33
+689	189	A1_V	-69	2025-03-18 14:37:47
+690	189	A1_H	-68	2025-03-18 14:37:47
+691	189	A2_V	-77	2025-03-18 14:37:47
+692	189	A2_H	-66	2025-03-18 14:37:47
+693	190	A1_V	-69	2025-03-18 14:38:10
+694	190	A1_H	-66	2025-03-18 14:38:10
+695	190	A2_V	-86	2025-03-18 14:38:10
+696	190	A2_H	-71	2025-03-18 14:38:10
+697	191	A1_V	-69	2025-03-18 14:38:25
+698	191	A1_H	-68	2025-03-18 14:38:25
+699	191	A2_V	-66	2025-03-18 14:38:26
+700	191	A2_H	-87	2025-03-18 14:38:26
+701	192	A1_V	-75	2025-03-18 14:39:04
+702	192	A1_H	-75	2025-03-18 14:39:04
+703	192	A2_V	-62	2025-03-18 14:39:04
+704	192	A2_H	-89	2025-03-18 14:39:05
+705	193	A1_V	-76	2025-03-18 14:39:19
+706	193	A1_H	-76	2025-03-18 14:39:19
+707	193	A2_V	-63	2025-03-18 14:39:19
+708	193	A2_H	-84	2025-03-18 14:39:20
+709	194	A1_V	-71	2025-03-18 14:39:36
+710	194	A1_H	-74	2025-03-18 14:39:36
+711	194	A2_V	-58	2025-03-18 14:39:36
+712	194	A2_H	-83	2025-03-18 14:39:36
+713	195	A1_V	-75	2025-03-18 14:39:51
+714	195	A1_H	-73	2025-03-18 14:39:51
+715	195	A2_V	-79	2025-03-18 14:39:51
+716	195	A2_H	-69	2025-03-18 14:39:52
+717	196	A1_V	-75	2025-03-18 14:40:06
+718	196	A1_H	-74	2025-03-18 14:40:06
+719	196	A2_V	-62	2025-03-18 14:40:06
+720	196	A2_H	-69	2025-03-18 14:40:06
+721	197	A1_V	-65	2025-03-18 14:40:36
+722	197	A1_H	-76	2025-03-18 14:40:36
+723	197	A2_V	-76	2025-03-18 14:40:36
+724	197	A2_H	-75	2025-03-18 14:40:36
+725	198	A1_V	-67	2025-03-18 14:40:49
+726	198	A1_H	-77	2025-03-18 14:40:49
+727	198	A2_V	-74	2025-03-18 14:40:49
+728	198	A2_H	-79	2025-03-18 14:40:49
+729	199	A1_V	-64	2025-03-18 14:41:07
+730	199	A1_H	-73	2025-03-18 14:41:07
+731	199	A2_V	-94	2025-03-18 14:41:07
+732	199	A2_H	-77	2025-03-18 14:41:07
+733	200	A1_V	-67	2025-03-18 14:41:22
+734	200	A1_H	-68	2025-03-18 14:41:22
+735	200	A2_V	-92	2025-03-18 14:41:22
+736	200	A2_H	-78	2025-03-18 14:41:22
+737	201	A1_V	-85	2025-03-18 14:41:58
+738	201	A1_H	-87	2025-03-18 14:41:59
+739	201	A2_V	-74	2025-03-18 14:41:59
+740	201	A2_H	-78	2025-03-18 14:41:59
+741	202	A1_H	-61	2025-03-18 16:20:59
+742	202	A2_V	-64	2025-03-18 16:20:59
+743	202	A1_V	-73	2025-03-18 16:21:00
+744	202	A2_H	-57	2025-03-18 16:21:00
+745	203	A2_V	-71	2025-03-18 16:41:18
+746	203	A1_H	-82	2025-03-18 16:41:18
+747	203	A1_V	-76	2025-03-18 16:41:18
+748	203	A2_H	-74	2025-03-18 16:41:18
+\.
+
+
+--
+-- TOC entry 4955 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: position_aoa_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.position_aoa_id_seq', 185, true);
+
+
+--
+-- TOC entry 4956 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: position_rssi_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.position_rssi_id_seq', 182, true);
+
+
+--
+-- TOC entry 4957 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: rssi_data_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.rssi_data_id_seq', 203, true);
+
+
+--
+-- TOC entry 4958 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: rssi_data_list_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.rssi_data_list_id_seq', 748, true);
+
+
+--
+-- TOC entry 4776 (class 2606 OID 16403)
+-- Name: anchor anchor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.anchor
+    ADD CONSTRAINT anchor_pkey PRIMARY KEY (anchor_id);
+
+
+--
+-- TOC entry 4774 (class 2606 OID 16396)
+-- Name: point point_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.point
+    ADD CONSTRAINT point_pkey PRIMARY KEY (point_id);
+
+
+--
+-- TOC entry 4782 (class 2606 OID 16530)
+-- Name: position_aoa position_aoa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_aoa
+    ADD CONSTRAINT position_aoa_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4784 (class 2606 OID 16546)
+-- Name: position_rssi position_rssi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_rssi
+    ADD CONSTRAINT position_rssi_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4780 (class 2606 OID 16495)
+-- Name: rssi_data_list rssi_data_list_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data_list
+    ADD CONSTRAINT rssi_data_list_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4778 (class 2606 OID 16480)
+-- Name: rssi_data rssi_data_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data
+    ADD CONSTRAINT rssi_data_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4788 (class 2606 OID 16531)
+-- Name: position_aoa position_aoa_rssi_data_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_aoa
+    ADD CONSTRAINT position_aoa_rssi_data_id_fkey FOREIGN KEY (rssi_data_id) REFERENCES public.rssi_data(id);
+
+
+--
+-- TOC entry 4789 (class 2606 OID 16547)
+-- Name: position_rssi position_rssi_rssi_data_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.position_rssi
+    ADD CONSTRAINT position_rssi_rssi_data_id_fkey FOREIGN KEY (rssi_data_id) REFERENCES public.rssi_data(id);
+
+
+--
+-- TOC entry 4786 (class 2606 OID 16496)
+-- Name: rssi_data_list rssi_data_list_anchor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data_list
+    ADD CONSTRAINT rssi_data_list_anchor_id_fkey FOREIGN KEY (anchor_id) REFERENCES public.anchor(anchor_id);
+
+
+--
+-- TOC entry 4787 (class 2606 OID 16501)
+-- Name: rssi_data_list rssi_data_list_rssi_data_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data_list
+    ADD CONSTRAINT rssi_data_list_rssi_data_id_fkey FOREIGN KEY (rssi_data_id) REFERENCES public.rssi_data(id);
+
+
+--
+-- TOC entry 4785 (class 2606 OID 16481)
+-- Name: rssi_data rssi_data_point_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rssi_data
+    ADD CONSTRAINT rssi_data_point_id_fkey FOREIGN KEY (point_id) REFERENCES public.point(point_id);
+
+
+-- Completed on 2025-03-20 14:11:55
+
+--
+-- PostgreSQL database dump complete
+--
+

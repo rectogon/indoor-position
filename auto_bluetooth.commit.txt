@@ -1,0 +1,182 @@
+# check_discovered_device นี้ทำหน้าที่เป็น ตัวกรองและประมวลผลอุปกรณ์ Bluetooth ที่ค้นเจอ 
+    # เพื่อดูว่าใช่อุปกรณ์เป้าหมายหรือไม่ โดยโค้ดใช้ในแอป Kivy บน Python ที่เชื่อมกับระบบ Bluetooth 
+    # (ผ่าน self.bridge) ซึ่งอาจเป็น Interface ของ CoreBluetooth บน macOS/iOS
+
+    def check_discovered_device(self, dt):
+        try:
+            device = self.bridge.getLastDiscoveredDevice() #ดึงอุปกรณ์ล่าสุดที่ตรวจพบผ่าน bridge (อินเตอร์เฟสที่เชื่อมกับ CoreBluetooth หรืออื่นๆ)
+            if not device:
+                return
+
+            # ดึงข้อมูลจาก device
+            device_name = device.objectForKey_(objc_str("name")).UTF8String() 
+            device_uuid = device.objectForKey_(objc_str("uuid")).UTF8String()
+            device_rssi = device.objectForKey_(objc_str("rssi")).intValue()
+            device_major = device.objectForKey_(objc_str("major")).intValue()
+            device_minor = device.objectForKey_(objc_str("minor")).intValue() # device ทั้ง 5 คือ ดึงค่าจาก dictionary ของอุปกรณ์ที่ได้มา เช่น ชื่อ, UUID, ค่า RSSI, major/minor
+
+
+
+            # ✅ ป้องกันกรณี device_name/device_uuid เป็น bytes
+            if isinstance(device_name, bytes): # เเปลงค่า เป็น Str
+                device_name = device_name.decode('utf-8')
+            if isinstance(device_uuid, bytes): #เเปลงค่า เป็น Str
+                device_uuid = device_uuid.decode('utf-8')
+
+            device_uuid_clean = device_uuid.replace("-", "").upper() #เเปลงเป็น uppercase เพื่อให้เปรียบเทียบง่ายขึ้น
+
+            Logger.info(f"🔍 Found: {device_name}, UUID: {device_uuid[:8]}..., Major: {device_major}, RSSI: {device_rssi}") #เพื่อตรวจว่า device ที่เจอมี UUID และ major ตรงกับ target ที่เราต้องการไหม
+
+            # 🔍 ตรวจว่าเป็น Target หรือไม่
+            is_target_device = any(
+                target["uuid"].upper() == device_uuid_clean and target["major"] == device_major 
+                for target in self.target_data_set
+            )
+
+            if is_target_device:
+                Logger.info(f"🎯 TARGET DEVICE FOUND! UUID: {device_uuid[:8]}..., Major: {device_major}")
+                self.current_device_uuid = device_uuid
+                self.found_data.add((device_uuid, device_major, device_rssi))
+                self.scan_results.append((device_uuid, device_major, device_rssi))
+
+                # 🔗 เชื่อมต่อ GATT
+                if not self.gatt_connected:
+                    Logger.info(f"🔗 Auto-connecting GATT to target device...")
+                    self.auto_connect_gatt(device_uuid)
+
+                # อัปเดต UI
+                self.display_target_device_info(device_name, device_uuid, device_rssi, device_major, device_minor)
+
+            else:
+                display_text = f"📱 Device: {device_name}\n"
+                display_text += f"🆔 UUID: {device_uuid[:8]}...\n"
+                display_text += f"📶 RSSI: {device_rssi} dBm\n"
+                display_text += f"🔢 Major: {device_major} | Minor: {device_minor}\n"
+                display_text += f"❌ Not a target device"
+                self.root.ids.label.text = display_text
+                Logger.info(f"❌ Not target device: {device_name}")
+
+        except Exception as e:
+            Logger.error(f"Error in check_discovered_device: {e}")
+
+#/////////////////////////////////////////////////////////////////////////////////////
+
+
+# ฟังก์ชัน display_target_device_info() นี้ทำหน้าที่ อัปเดต UI ของแอป เพื่อแสดงรายละเอียดของอุปกรณ์ Bluetooth เป้าหมาย (target device)
+#  ที่เพิ่งค้นพบและเชื่อมต่อ โดยแสดงผลใน label ของ UI (ผ่าน self.root.ids.label.text) พร้อมสรุปสถานะและข้อมูลที่พบทั้งหมด
+
+    def display_target_device_info(self, name, uuid, rssi, major, minor):
+        """แสดงข้อมูล target device"""
+        try:
+            display_text = f"🎯 TARGET DEVICE FOUND!\n"
+            display_text += f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            display_text += f"📱 Device: {name}\n"
+            display_text += f"🆔 UUID: {uuid[:8]}...\n"
+            display_text += f"📶 RSSI: {rssi} dBm\n"
+            display_text += f"🔢 Major: {major} | Minor: {minor}\n"
+            display_text += f"━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            
+            # แสดงสถานะ GATT
+            if self.gatt_connected:
+                display_text += f"🔗 GATT: ✅ Connected\n"
+                display_text += f"📶 RSSI Monitoring: Active\n"
+            else:
+                display_text += f"🔗 GATT: 🔄 Connecting...\n"
+            
+            # แสดงข้อมูลที่พบทั้งหมด
+            display_text += f"\n📊 Found Devices: {len(self.found_data)}/4\n"
+            
+            # แสดงรายการ target ที่พบแล้ว
+            found_targets = []
+            for uuid_found, major_found, rssi_found in self.found_data:
+                target_name = self.get_target_name(uuid_found, major_found)
+                found_targets.append(f"{target_name}: {rssi_found}dBm")
+            
+            if found_targets:
+                display_text += f"✅ Found: {', '.join(found_targets)}"
+            
+            self.root.ids.label.text = display_text
+            
+        except Exception as e:
+            Logger.error(f"Error displaying target device info: {e}")
+
+#/////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    # ฟังก์ชัน get_target_name() นี้มีหน้าที่ แปลง UUID ของอุปกรณ์เป้าหมายให้กลายเป็นชื่อที่เข้าใจง่าย เช่น “A1”, “A2” 
+     # เพื่อใช้แสดงผลใน UI หรือ log โดยไม่สนใจค่า major มากนัก เพราะบน iPhone ค่า major อาจถูกส่งมาเป็น 0 เสมอ
+
+    def get_target_name(self, uuid, major):
+        """แปลง UUID เป็นชื่อ Anchor (ไม่สนใจ major เพราะ iPhone ส่งมาเป็น 0)"""
+        try:
+            if uuid.upper() == "A7E39D7510F2FE254DAE4230DBC6C3A4":
+                return f"A1 (Major: {major})"
+            elif uuid.upper() == "D8AC484E4FBB4B36BF12C249AB83673B":
+                return f"A2 (Major: {major})"
+            else:
+                return f"Unknown (Major: {major})"
+        except:
+            return "Unknown"
+
+#/////////////////////////////////////////////////////////////////////////////////////
+        
+
+        
+#ฟังก์ชัน auto_connect_gatt() ทำหน้าที่ เริ่มต้นการเชื่อมต่อ GATT (Generic Attribute Profile) 
+# แบบอัตโนมัติเมื่อพบอุปกรณ์ Bluetooth ที่เป็น target ซึ่งตรวจพบในขั้นตอนก่อนหน้า
+
+    def auto_connect_gatt(self, uuid):
+        """เชื่อมต่อ GATT อัตโนมัติเมื่อพบ target device"""
+        try:
+            if isinstance(uuid, bytes):
+                uuid = uuid.decode('utf-8')
+            uuid = uuid.upper()
+
+            Logger.info(f"🔗 Starting auto GATT connection to: {uuid[:8]}...")
+            
+            self.bridge.startConnectionForDevice_(objc_str(uuid))
+            self.gatt_connected = True
+            
+            Clock.schedule_once(lambda dt: self.check_auto_connection_status(uuid), 3.0)
+            
+            Logger.info("✅ Auto GATT connection initiated")
+            
+        except Exception as e:
+            Logger.error(f"❌ Auto GATT connection failed: {e}")
+            self.root.ids.status.text = f"GATT Error: {str(e)[:30]}..."
+
+#/////////////////////////////////////////////////////////////////////////////////////
+
+
+#ฟังก์ชัน check_auto_connection_status() นี้มีหน้าที่ ตรวจสอบว่าอุปกรณ์เป้าหมายที่พยายามเชื่อมต่อแบบอัตโนมัติ (GATT)
+#  เชื่อมต่อสำเร็จหรือไม่ หลังจากผ่านไประยะเวลาหนึ่ง (มักเรียกหลังจาก auto_connect_gatt() รอ 3 วินาที)
+
+    def check_auto_connection_status(self, uuid):
+        """ตรวจสอบสถานะการเชื่อมต่อ GATT อัตโนมัติ"""
+        try:
+            is_connected = self.bridge.isDeviceConnected_(objc_str(uuid))
+            connection_state = self.bridge.getConnectionState(objc_str(uuid))
+            
+            Logger.info(f"Auto Connection Status: {connection_state}, Connected: {is_connected}")
+            
+            if is_connected:
+                Logger.info("✅ Auto GATT connection successful!")
+                
+                # เริ่ม Real-time RSSI monitoring
+                self.start_auto_rssi_monitoring()
+                
+                # อัพเดท status
+                self.root.ids.status.text = "GATT Connected - Monitoring RSSI"
+                self.root.ids.status2.text = "GATT Connected - Monitoring RSSI"
+                
+            else:
+                Logger.warning("❌ Auto GATT connection failed")
+                self.gatt_connected = False
+                self.root.ids.status.text = f"GATT Failed: {connection_state}"
+                self.root.ids.status2.text = f"GATT Failed: {connection_state}"
+                
+        except Exception as e:
+            Logger.error(f"Error checking auto connection status: {e}")
+
+#/////////////////////////////////////////////////////////////////////////////////////

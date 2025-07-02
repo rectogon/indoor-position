@@ -1563,6 +1563,8 @@ if platform == 'android':
             self.x_real = None
             self.y_real = None
             self.point = None
+            self.scanned_point = []
+            self.scanned_point.append({"point": "F"})
             self.previous_point = self.point
             self.x_cal = 7.5
             self.y_cal = 0.0
@@ -2124,7 +2126,7 @@ if platform == 'android':
                 y_aoa_cal = y1
                 x_rssi_cal = x2
                 y_rssi_cal = y2
-                self.scanned_point.append({"point": self.point})
+                #self.scanned_point.append({"point": self.point})
                 self.previous_point = self.point
                 self.distance_aoa = None
                 self.distance_rssi = None
@@ -2328,20 +2330,19 @@ if platform == 'android':
             #     self.show_alert("scanning..., please wait a moment)")
             #     return  #Stop if not select
             
-            # url = "http://192.168.100.49:5000/rssi_data" #IP of server to connect database
-            # for device in self.scanned_point:
-            #     data = {
-            #         "point": device['point']
-                    
-            #     }
-            #     try:
-            #         response = requests.post(url, json=data)
-            #         response.raise_for_status()
-            #         Logger.info(f'Successfully sent data to API: {response.json()}')
-            #     except requests.exceptions.HTTPError as http_err:
-            #         Logger.error(f'HTTP error occurred: {http_err}')
-            #     except Exception as err:
-            #         Logger.error(f'Other error occurred: {err}')
+            url = "http://192.168.100.196:5000/rssi_data" #IP of server to connect database
+            for device in self.scanned_point:
+                data = {
+                    "point": device['point']
+                }
+                try:
+                    response = requests.post(url, json=data)
+                    response.raise_for_status()
+                    Logger.info(f'Successfully sent data to API: {response.json()}')
+                except requests.exceptions.HTTPError as http_err:
+                    Logger.error(f'HTTP error occurred: {http_err}')
+                except Exception as err:
+                    Logger.error(f'Other error occurred: {err}')
                     
             url_datalist = "http://192.168.100.196:5000/rssi_data_list" #IP of server to connect database
             for device in self.scanned_devices:

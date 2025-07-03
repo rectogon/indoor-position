@@ -1119,7 +1119,7 @@ func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: E
     let locationManager = CLLocationManager()
 
     // MARK: - Beacon Region Config (UUID + Major)
-    let regions: [CLBeaconRegion] = [
+    let regions: [CLBeaconRegion] = [ // กำหนดรายการของ Beacon ที่ต้องการสแกนไว้ มีทั้งหมด 8 region ที่ต่างกัน 
         CLBeaconRegion(uuid: UUID(uuidString: "a1111111-1111-1111-1111-111111111111")!, major: 111, identifier: "A-111"),
         CLBeaconRegion(uuid: UUID(uuidString: "a1111111-1111-1111-1111-111111111111")!, major: 888, identifier: "A-888"),
 
@@ -1131,10 +1131,10 @@ func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: E
 
         CLBeaconRegion(uuid: UUID(uuidString: "d4444444-4444-4444-4444-444444444444")!, major: 111, identifier: "D-111"),
         CLBeaconRegion(uuid: UUID(uuidString: "d4444444-4444-4444-4444-444444444444")!, major: 888, identifier: "D-888")
-    ]
+    ]// นี่คือค่าที่่ประกาศตัวเเปรไว้ ทั้ง 8 ค่า 
 
     func startScanning() {
-        print("✅ start periodic RSSI updates for device:")
+        print("✅ start periodic RSSI updates for device:") // เพื่อเริ่มตรวจจับการเข้า/ออกแต่ละ region เพื่ออ่าน RSSI และข้อมูลจาก Beacon ภายใน region
         for region in regions {
             region.notifyEntryStateOnDisplay = true
             locationManager.startMonitoring(for: region)
@@ -1143,7 +1143,7 @@ func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: E
         
     }
 
-    func stopScanning() {
+    func stopScanning() { // หยุดการสแกนทั้งหมด
         print("🛑 stop scanning for beacons")
         for region in regions {
             locationManager.stopMonitoring(for: region)
@@ -1158,38 +1158,38 @@ func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: E
     private var rssi_beacon: String = ""
     private var major_beacon: String = ""
     private var minor_beacon: String = ""
-    
+    // ใช้สำหรับเก็บข้อมูล Beacon ที่ตรวจพบล่าสุด หรือทั้งหมด
 
     
-    @objc protocol BeaconRangeDelegate {
-    func didRangeBeacons(beacons: [[String: Any]])
-    func didUpdateBeacon(uuid: String, major: Int, minor: Int, rssi: Int)
+    @objc protocol BeaconRangeDelegate { // คือ Protocol สำหรับส่งข้อมูล beacon ที่สแกนได้ ไปยัง delegate
+    func didRangeBeacons(beacons: [[String: Any]]) // ส่งข้อมูล beacon ทั้งหมดที่เจอแบบ array
+    func didUpdateBeacon(uuid: String, major: Int, minor: Int, rssi: Int) // ส่งข้อมูล beacon เฉพาะตัวเดียวล่าสุด
 }
     // MARK: - เก็บ Beacon ที่เคยเจอแล้ว (ไม่ซ้ำ)
 var seenBeacons: Set<String> = []
 
-func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon], satisfying beaconConstraint: CLBeaconIdentityConstraint) {
-    var beaconDataArray: [[String: Any]] = []
+func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon], satisfying beaconConstraint: CLBeaconIdentityConstraint) { // ทำการ ranging แล้วพบ Beacon ภายในช่วงสัญญาณ (ระยะใกล้พอ)
+    var beaconDataArray: [[String: Any]] = [] // เตรียม array เพื่อเก็บข้อมูล Beacon ทุกตัวที่เจอ
+    for beacon in beacons { // วนลูปผ่าน Beacon ที่อยู่ในช่วงสัญญาณ
 
-    for beacon in beacons {
         let uuid_ = beacon.uuid
         let major = beacon.major.intValue
         let minor = beacon.minor.intValue
         let rssi = beacon.rssi
         let proximity = proximityString(beacon.proximity)
         let accuracy = beacon.accuracy
+        // ดึงข้อมูลจาก CLBeacon แต่ละตัว เช่น UUID, major, minor, RSSI, proximity และระยะประมาณ (accuracy)
 
-        let beaconKey = "\(uuid_.uuidString)_\(major)_\(minor)"
+        let beaconKey = "\(uuid_.uuidString)_\(major)_\(minor)" //สร้าง “key” ที่ใช้ระบุ beacon เฉพาะ major และ minor เท่านั้น
 
         if seenBeacons.contains(beaconKey) {
             print("⏩ Already processed: \(beaconKey), stopping scan...")
-            
-            // 🛑 หยุดการสแกนทันทีเมื่อเจอ beacon ซ้ำ
+
             manager.stopRangingBeacons(satisfying: beaconConstraint)
             break
-        }
-
-        seenBeacons.insert(beaconKey)
+        } // 🛑 หยุดการสแกนทันทีเมื่อเจอ beacon ซ้ำ
+                
+        seenBeacons.insert(beaconKey) // เก็บ beaconKey นี้ไว้ในชุดข้อมูลที่เคยเจอแล้ว
 
         let beaconData: [String: Any] = [
             "uuid": uuid_.uuidString,
@@ -1199,14 +1199,14 @@ func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon],
             "timestamp": Date().timeIntervalSince1970,
             "proximity": proximity,
             "accuracy": accuracy
-        ]
+        ] // รวมข้อมูล beacon แต่ละตัวไว้ใน dictionary (beaconData) เพื่อนำไปใช้งาน
 
-        beaconDataArray.append(beaconData)
+        beaconDataArray.append(beaconData) // insert ข้อมูลลงใน array เพื่อเก็บข้อมูล Beacon ทั้งหมดที่เจอ
 
         print("📡 NEW Beacon: \(beaconKey), RSSI: \(rssi)")
         print("DataArray.append")
         print(beaconDataArray)
-    }
+    } // แสดงข้อมูล
 }
 
 
@@ -1217,19 +1217,19 @@ func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon],
         case .far: return "far"
         case .unknown: return "unknown"
         @unknown default: return "unknown"
-    }
+    } // ต้องการแสดงหรือส่งค่า proximity ในรูปแบบข้อความ
 }
 
     // MARK: - Delegate: Authorization
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             
-        }
+        } // ตรวจสอบว่าผู้ใช้ให้อนุญาตใช้ location หรือไม่
     }
 
     // เพิ่ม methods เหล่านี้ใน BluetoothManager class
 
-    @objc func getBeaconRegions() -> [[String: Any]] {
+    @objc func getBeaconRegions() -> [[String: Any]] { // ใช้สำหรับตรวจสอบว่าแอปกำลัง monitor beacons ใด
         var regionsData: [[String: Any]] = []
         
         for region in regions {
@@ -1244,7 +1244,7 @@ func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon],
         return regionsData
     }
 
-    @objc func getBeaconRegionsAsJSON() -> String {
+    @objc func getBeaconRegionsAsJSON() -> String { // คืนค่ารูปแบบ JSON (string) ของ regions ทั้งหมด
         let regionsData = getBeaconRegions()
         
         do {
@@ -1256,7 +1256,7 @@ func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon],
         }
     }
 
-    @objc func getBeaconRegionByIdentifier(_ identifier: String) -> [String: Any]? {
+    @objc func getBeaconRegionByIdentifier(_ identifier: String) -> [String: Any]? { // รับ identifier แล้วคืนค่าข้อมูลของ region ที่มี identifier นั้น
         for region in regions {
             if region.identifier == identifier {
                 return [
@@ -1269,14 +1269,14 @@ func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon],
         return nil
     }
 
-    @objc func getAllBeaconUUIDs() -> [String] {
+    @objc func getAllBeaconUUIDs() -> [String] { // คืนค่า array ของ UUID beacon ที่ใช้อยู่ทั้งหมดใน regions
         return regions.map { $0.uuid.uuidString }
     }
 
-    @objc func getBeaconRegionsCount() -> Int {
+    @objc func getBeaconRegionsCount() -> Int { // คืนจำนวน regions ที่กำลัง monitor อยู่
         return regions.count
     }
-    @objc func getbe() -> NSDictionary {
+    @objc func getbe() -> NSDictionary { // คืนค่า beacon ล่าสุดที่เจอ โดยดึงจากตัวแปร name, uuid, rssi, major, minor, proximity
         return [
             "name": name_beacon,
             "uuid": uuid_beacon,

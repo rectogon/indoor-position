@@ -1,5 +1,5 @@
-  #import "alan-Bridging-Header.h"
-  #import "alan-Swift.h"  // Replace with your actual Swift header name
+  #import "test-Bridging-Header.h"
+  #import "test-Swift.h"  // Replace with your actual Swift header name
 
   @interface BluetoothBridge () <BluetoothScanDelegate>
   @property (nonatomic, strong) BluetoothManager *manager;
@@ -20,7 +20,6 @@
           _connectedDevices = [[NSMutableArray alloc] init];
           _isCurrentlyScanning = NO;
           NSLog(@"BluetoothBridge initialized with manager: %@", _manager);
-    
       }
       return self;
   }
@@ -552,9 +551,4 @@ characteristicUUID:(NSString *)characteristicUUID {
       [_manager stopPeriodicRSSIUpdates];
   }
 
-
-- (void)startBeaconScan {
-    [_manager startScanning];
-}
   @end
-

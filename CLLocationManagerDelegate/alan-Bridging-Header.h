@@ -66,6 +66,6 @@
 
 
 - (void)startBeaconScan;
-
+- (void)stopBeaconScan;
 
 @end

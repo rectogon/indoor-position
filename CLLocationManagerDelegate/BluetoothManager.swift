@@ -1,12 +1,15 @@
 import Foundation
 import CoreBluetooth
+import UIKit
+import CoreLocation
+
 
 @objc protocol BluetoothScanDelegate {
     func didDiscoverDevice(name: String?, uuid: String, rssi: Int, major: Int, minor: Int)
 }
 
 @objcMembers
-class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate,CLLocationManagerDelegate {
     var centralManager: CBCentralManager?
     
     weak var delegate: BluetoothScanDelegate?
@@ -31,6 +34,8 @@ class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate
     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
     }
 
     // อัพเดท updateUI method ให้รวม RSSI
@@ -1027,14 +1032,69 @@ func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: E
         
         print("✅ Stopped periodic RSSI updates for device: \(uuid)")
     }
+ 
+
+
+
+
+    let locationManager = CLLocationManager()
+
+    // MARK: - Beacon Region Config (UUID + Major)
+    let regions: [CLBeaconRegion] = [
+        CLBeaconRegion(uuid: UUID(uuidString: "a1111111-1111-1111-1111-111111111111")!, major: 111, identifier: "A-111"),
+        CLBeaconRegion(uuid: UUID(uuidString: "a1111111-1111-1111-1111-111111111111")!, major: 888, identifier: "A-888"),
+
+        CLBeaconRegion(uuid: UUID(uuidString: "b2222222-2222-2222-2222-222222222222")!, major: 111, identifier: "B-111"),
+        CLBeaconRegion(uuid: UUID(uuidString: "b2222222-2222-2222-2222-222222222222")!, major: 888, identifier: "B-888"),
+
+        CLBeaconRegion(uuid: UUID(uuidString: "c3333333-3333-3333-3333-333333333333")!, major: 111, identifier: "C-111"),
+        CLBeaconRegion(uuid: UUID(uuidString: "c3333333-3333-3333-3333-333333333333")!, major: 888, identifier: "C-888"),
+
+        CLBeaconRegion(uuid: UUID(uuidString: "d4444444-4444-4444-4444-444444444444")!, major: 111, identifier: "D-111"),
+        CLBeaconRegion(uuid: UUID(uuidString: "d4444444-4444-4444-4444-444444444444")!, major: 888, identifier: "D-888")
+    ]
+
+    func startScanning() {
+        print("✅ start periodic RSSI updates for device:")
+        for region in regions {
+            region.notifyEntryStateOnDisplay = true
+            locationManager.startMonitoring(for: region)
+            locationManager.startRangingBeacons(satisfying: CLBeaconIdentityConstraint(uuid: region.uuid, major: CLBeaconMajorValue(region.major!)))
+        }
+        
+    }
+    
+    func stopScanning() {
+        print("🛑 stop scanning for beacons")
+        for region in regions {
+            locationManager.stopMonitoring(for: region)
+            locationManager.stopRangingBeacons(satisfying: CLBeaconIdentityConstraint(uuid: region.uuid, major: CLBeaconMajorValue(region.major!)))
+    }
+}
+
+    // MARK: - Delegate: Beacon พบแล้ว
+    func locationManager(_ manager: CLLocationManager, didRange beacons: [CLBeacon], satisfying beaconConstraint: CLBeaconIdentityConstraint) {
+        for beacon in beacons {
+            let uuid = beacon.uuid
+            let major = beacon.major.intValue
+            let minor = beacon.minor.intValue
+            let rssi = beacon.rssi
+
+            print("📡 UUID: \(uuid), Major: \(major), Minor: \(minor), RSSI: \(rssi)")
+        }
+    }
+
+    // MARK: - Delegate: Authorization
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
+            
+        }
+    }
 } // ← closing brace ของ BluetoothManager class
-
-
-
-
 
 @objc protocol BluetoothBridgeDelegate {
     @objc optional func didConnectToDevice(uuid: String)
     @objc optional func didDisconnectFromDevice(uuid: String, error: Error?)
     @objc optional func didFailToConnectToDevice(uuid: String, error: Error?)
 }
+

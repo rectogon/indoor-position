@@ -1,0 +1,56 @@
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.metrics import mean_absolute_error
+
+# 1. โหลดข้อมูล
+df = pd.read_csv("your_file.csv")  # <- เปลี่ยนชื่อไฟล์ตามจริง
+
+# 2. One-hot encode anchor_id (เช่น A1_H, A2_V, ... A4_H)
+anchor_encoder = OneHotEncoder(sparse=False)
+anchor_encoded = anchor_encoder.fit_transform(df[['anchor_id']])
+
+# 3. รวมฟีเจอร์ input: [rssi_value] + [anchor_id (one-hot)]
+X = np.hstack([df[['rssi_value']].values, anchor_encoded])
+
+# 4. เป้าหมายคือพิกัดตำแหน่งจริง (x, y)
+y = df[['x', 'y']].values
+
+# 5. สเกลข้อมูล (ช่วยให้ train เร็วขึ้น)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 6. แบ่งข้อมูลเป็น train/test
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# 7. สร้างโมเดล
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(2)  # ทำนาย x และ y
+])
+
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+
+# 8. เทรนโมเดล
+model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.1)
+
+# 9. ประเมินโมเดล
+loss, mae = model.evaluate(X_test, y_test)
+print(f"Test MAE: {mae:.2f}")
+
+# 10. ทดลองทำนาย
+# สมมุติว่าค่า RSSI ใหม่ = -67 และ anchor_id = "A3_V"
+test_rssi = -67
+test_anchor_id = "A3_V"
+
+# แปลง anchor_id ใหม่ด้วย encoder เดิม
+encoded_anchor = anchor_encoder.transform([[test_anchor_id]])
+test_input = np.hstack([[test_rssi], encoded_anchor])
+test_input_scaled = scaler.transform([test_input])
+
+# ทำนาย
+pred = model.predict(test_input_scaled)
+print(f"Predicted position (x, y): {pred[0]}")

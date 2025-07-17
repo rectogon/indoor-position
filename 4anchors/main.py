@@ -66,7 +66,7 @@ MDBoxLayout:
                 id: status
                 halign: "center"
                 size_hint_y: None
-                pos_hint: {"center_x": .5, "center_y": .15}
+                pos_hint: {"center_x": .5, "center_y": .25}
             
             MDCard:
                 ripple_behavior: False
@@ -100,6 +100,50 @@ MDBoxLayout:
                 on_press: app.send_data()
                 md_bg_color: app.theme_cls.primary_light
                 pos_hint: {"center_x": .5, "center_y": .35}
+
+            MDRectangleFlatButton:
+                text: "Send Data"
+                text_color: "black"
+                on_press: app.testxy()
+                md_bg_color: app.theme_cls.primary_light
+                pos_hint: {"center_x": .75, "center_y": .10}
+            
+            MDCard:
+                ripple_behavior: False
+                md_bg_color: app.theme_cls.primary_dark
+                size_hint: 0.4, 0.1
+                pos_hint: {"center_x": .35, "center_y": .10}
+                mode: "rectangle"
+
+                MDTextField:
+                    id: X_input
+                    hint_text: "X"
+                    hint_text_color_normal: "black"
+                    helper_text: "จะใช้สำหรับแสดงผล"
+                    theme_text_color: "Custom"
+                    text_color_normal: "black"
+                    helper_text_mode: "on_focus"
+                    pos_hint: {"center_x": .2, "center_y": 0.50}
+                    md_bg_color: app.theme_cls.primary_dark
+                    mode: "rectangle"
+                    line_color_normal: "black"
+                    line_color_focus: "black"
+                    input_type: "number"
+
+                MDTextField:
+                    id: Y_input
+                    hint_text: "Y"
+                    hint_text_color_normal: "black"
+                    helper_text: "จะใช้สำหรับแสดงผล"
+                    theme_text_color: "Custom"
+                    text_color_normal: "black"
+                    helper_text_mode: "on_focus"
+                    pos_hint: {"center_x": .8, "center_y": 0.50}
+                    md_bg_color: app.theme_cls.primary_dark
+                    mode: "rectangle"
+                    line_color_normal: "black"
+                    line_color_focus: "black"
+                    input_type: "number"
 
         MDBottomNavigationItem:
             name: 'screen 2'
@@ -821,8 +865,7 @@ sm.add_widget(DemoPage(name='demopage'))
 #     MyApp().run()
 
 # รันบนมือถือ Android
-
-if platform == "android":
+if platform == 'android':
     from able import GATT_SUCCESS, BluetoothDispatcher, require_bluetooth_enabled
     jnius_config.set_classpath('org/able/BLE.jar')
     jnius_config.set_classpath('org/able/BLEAdvertiser.jar')
@@ -847,6 +890,8 @@ if platform == "android":
             self.image.size = (self.width, self.height)
             self.image.pos_hint = {"center_x": .5, "top": 0.5}  
             self.add_widget(self.image)
+            ##add for ios
+            #Clock.schedule_once(self.update_image_size, 0)
             
             self.labels = []
             self.grid_drawn = False
@@ -885,9 +930,9 @@ if platform == "android":
 
             # use canvas to draw
             with self.canvas:
-                # Color(0, 1, 0, 1)  #Green
+                Color(0, 1, 0, 1)  #Green
                 #draw square
-                # self.rect = Line(rectangle=(131, 345, 776, 990), width=1.5)  
+                self.rect = Line(rectangle=(131, 345, 776, 990), width=1.5)  
                 
                 Color(0, 0, 0, 1)    #black
                 self.point_A1 = Ellipse(pos=(self.start_L_x-5, self.start_L_y-5), size=(15, 15))  
@@ -1030,7 +1075,6 @@ if platform == "android":
             #Update the label estimated coordinates
             self.coord_label_P.text = f"({real_coord[0]:.2f}, {real_coord[1]:.2f})"
             self.coord_label_P.pos = (x-48, y-78)
-            
     #-------------------------------------------------------------------------------- 
     #Map of Screen4 (Table)
     class MapWidget_Point(Widget):
@@ -1302,7 +1346,7 @@ if platform == "android":
             super().__init__(**kwargs)
 
         def fetch_data(self,point):
-            url = f'http://192.168.30.29:5000/Table_Point' #IP of server to connect database
+            url = f'http://192.168.100.49:5000/Table_Point' #IP of server to connect database
             params = {'point': point}  #send 'point' to request parameters
             print("Fetching from:", url, "with params:", params)
             response = requests.get(url, params=params)
@@ -1413,7 +1457,8 @@ if platform == "android":
     #add ClientsTable to ScreenManager
     sm.add_widget(ClientsTable(name='Clientstable'))
     sm.add_widget(MapScreen(name='map_screen'))
-    
+
+
     class DeviceDispatcher(BluetoothDispatcher):
         def __init__(self, device, rssi, uuid, major, minor):
             super().__init__()
@@ -1424,7 +1469,6 @@ if platform == "android":
             self._uuid: str = uuid  # Store the UUID
             self._major: str = major # Store the Major
             self._minor: str = minor # Store the Minor
-
         @property
         def title(self) -> str:
             return f"<{self._address}><{self._name}><{self._uuid}><{self._major}"
@@ -1473,7 +1517,7 @@ if platform == "android":
             app = App.get_running_app()
             current_text = app.root.ids.label.text
             # app.root.ids.label.text = current_text + scanned_info  # เพิ่มข้อมูลใหม่
-
+        
     class ScannerDispatcher(BluetoothDispatcher):
         def __init__(self,target_filters=None):
             super().__init__()
@@ -1487,7 +1531,7 @@ if platform == "android":
             if not success:
                 # send to MyApp
                 App.get_running_app().update_status("unsuccessful") 
-            
+            Logger.info("Not Sure:")
         def start_scan(self):
             # Start Scan Bluetooth Hear
             # Call the scan method from the parent class.
@@ -1502,7 +1546,7 @@ if platform == "android":
                 self.connect_gatt(self.device)  # connect to device
                 Logger.info("Scan: completed")
                 # self.clear_devices()
-                       
+                    
         def on_device(self, device, rssi, advertisement):
             address = device.getAddress()
             name = device.getName()
@@ -1530,6 +1574,7 @@ if platform == "android":
             Logger.info(f"Discovered device with UUID: {uuid} and Major: {major}")        
             # if uuid in self.target_uuids:
             if any(filter.get("uuid") == uuid and filter.get("major") == major for filter in self.target_filters):
+                Logger.info("found_data: completed")
                 App.get_running_app().update_found_data(uuid, major, rssi)
             # if uuid and major in self.target_filters:
                 if major not in self._devices:
@@ -1539,26 +1584,25 @@ if platform == "android":
                     # to avoid multiple dispatchers creation for this device
                     self._devices[address] = dispatcher
                     Logger.info(f"Scan: device <{name}> address <{address}> added with UUID <{uuid}> and Major <{major}>")
-                    dispatcher.start()
+                    #dispatcher.start()
                     
                 self.device = device
                 # self.stop_scan()  
                 
             else:
-                # Logger.info(f"UUID {uuid} does not match target UUIDs.")
+                Logger.info(f"UUID {uuid} does not match target UUIDs.")
                 return
                     
-            self.stop_scan()
+            #self.stop_scan()
             return name
         
         def clear_devices(self):
             self._devices.clear()  
-
     class MyApp(MDApp,BluetoothDispatcher):
         def build(self):
             self.theme_cls.theme_style = "Dark"
             self.theme_cls.primary_palette = "Amber"
-            self.target_device_names = ["P2N_09725", "P2N_09714", "ZLB_39612"]
+            self.target_device_names = ["P2N_09725", "P2N_09714", "ZLB_39612","IPHONES"]
             self.scan_results = []
             self.x_real = None
             self.y_real = None
@@ -1574,10 +1618,14 @@ if platform == "android":
             
             #track found data
             self.target_data_set = [
-                {"uuid": "4e543f43cdb34bbe87948a08bb2681db", "major": 888},
-                {"uuid": "4e543f43cdb34bbe87948a08bb2681db", "major": 111},
-                {"uuid": "d8ac484e4fbb4b36bf12c249ab83673b", "major": 888},
-                {"uuid": "d8ac484e4fbb4b36bf12c249ab83673b", "major": 111}
+                {"uuid": "d4444444444444444444444444444444", "major": 888},
+                {"uuid": "d4444444444444444444444444444444", "major": 111},
+                {"uuid": "c3333333333333333333333333333333", "major": 888},
+                {"uuid": "c3333333333333333333333333333333", "major": 111},
+                {"uuid": "b2222222222222222222222222222222", "major": 888},  # A3 HOR
+                {"uuid": "b2222222222222222222222222222222", "major": 111},  # A3 VER
+                {"uuid": "a1111111111111111111111111111111", "major": 888},  # A4 HOR
+                {"uuid": "a1111111111111111111111111111111", "major": 111}   # A4 VER
             ]
             self.found_data = set()  
             self.screen = Builder.load_string(KV)
@@ -1637,21 +1685,24 @@ if platform == "android":
                 
         #Show notification of restart
         def show_restart_alert(self):
-            if not self.dialog_restart:  #if don't have Dialog. Create new
-                self.dialog_restart = MDDialog(
-                    title="Scanning is Unsuccessfully!",
-                    text="Pls. Open app again",
-                    buttons=[
-                        MDRaisedButton(
-                            text="OK",
-                            on_release=lambda x: self.close_app()
-                        )
-                    ]
-                )
-                self.dialog_restart.open()  #Dialog Open
+            Logger.info("restart_alert_occur")
+        #     if not self.dialog_restart:  #if don't have Dialog. Create new
+        #         self.dialog_restart = MDDialog(
+        #             title="Scanning is Unsuccessfully!",
+        #             text="Pls. Open app again",
+        #             buttons=[
+        #                 MDRaisedButton(
+        #                     text="OK",
+        #                     on_release=lambda x: self.close_app()
+        #                 )
+        #             ]
+        #         )
+        #         self.dialog_restart.open()  #Dialog Open
 
-            elif not self.dialog_restart._is_open:  #if have Dialog but not open --> open
-                self.dialog_restart.open()
+        #     elif not self.dialog_restart._is_open:  #if have Dialog but not open --> open
+        #         self.dialog_restart.open()
+    
+           
                 
         def close_app(self):
             if platform == "android":
@@ -1689,25 +1740,35 @@ if platform == "android":
             return autoclass("org.kivy.android.PythonActivity").mActivity
 
         @require_bluetooth_enabled
+
         def start_service(self, loop_count=0):
             #Check if Bluetooth is enabled
+            x_input = self.root.ids.X_input.text
+            y_input = self.root.ids.Y_input.text
+
             if not self.is_bluetooth_enabled():
                 self.request_bluetooth_enable()
                 return
-            
-            #Check 'point' is selected or not
-            if self.x_real is None or self.y_real is None:
-                self.show_alert("Please select a Point! before starting the scan")
+            if x_input == "" or y_input == "":
+                self.show_alert("Please select a X, Y value!")
                 return  #Stop if not select
+                
+            #if self.x_real is None or self.y_real is None:
+                #self.show_alert("Please select a Point! before starting the scan")
+                #return  #Stop if not select
             
-            Logger.info(f"loop_count: {loop_count}")
-                    
+            Logger.info(f"old data: {self.found_data}")
+            self.found_data.clear()
+            
             self.service.start(self.activity, "")
+            self.scanner_dispatcher = ScannerDispatcher()
             Logger.info("Service started.")
 
             #Call ScannerDispatcher for scan devices
             self.scanner_dispatcher = ScannerDispatcher(target_filters=self.target_data_set)
             Logger.info("Starting scan...")
+            Logger.info(f"condition of scan: {self.scanner_dispatcher}")
+            Logger.info(f"has start_scan: {hasattr(self.scanner_dispatcher, 'start_scan')}")
             self.start = "start"
 
             self.root.ids.status.text = "Scanning..."
@@ -1724,11 +1785,30 @@ if platform == "android":
         
         def scan_for_data(self):
             self.scanner_dispatcher.start_scan()
-            Clock.schedule_once(self.check_scan_results, 5)  #Schedule to check results after 20 seconds
-
+            Clock.schedule_once(self.check_results, 20)  #Schedule to check results after 20 seconds
+        def check_results(self, dt):
+            Logger.info(f"found_data first: {self.found_data}")
+            self.scanner_dispatcher.stop_scan()
+            found_data_filtered = {(d[0], d[1]) for d in self.found_data}
+            #get uuid and major from target_data_set
+            target_data_filtered = {(d['uuid'], d['major']) for d in self.target_data_set}
+            if found_data_filtered == target_data_filtered:
+                Logger.info("All target data found.")
+                self.root.ids.status.text = "All target data found. Stopping scan."
+                self.scanner_dispatcher.stop_scan()  #Stop scanning
+                self.update_scan_results(self.found_data)
+                
+                #Set a flag to prevent re-scanning
+                self.scanning = False
+                self.stop_scan()
+            else:
+                Logger.info("Not all target data found. Stopping scan...")
+                self.stop_scan()
+            
         def check_scan_results(self, dt):
             self.scanner_dispatcher.stop_scan() #Stop scanning
-            # print("found_data:", self.found_data)
+            #print("found_data first:", self.found_data)
+            Logger.info(f"found_data first: {self.found_data}")
             # print("target_data_set:", self.target_data_set)
             
             #get uuid and major from found_data
@@ -1766,6 +1846,8 @@ if platform == "android":
 
         def update_scan_results(self, found_data):
             Logger.info(f"All target data has been successfully collected")
+            
+
             self.scan_results = list(self.found_data)
             if self.scan_results:
                 self.display_scan_results()
@@ -1775,7 +1857,7 @@ if platform == "android":
             self.scanning = False
             
         #end of scan--------------------------------------------------------------------------
-           
+        
         #Screen 2 
         def open_menu_cal(self, caller_cal):
             self.menu_cal.caller = caller_cal
@@ -1818,7 +1900,7 @@ if platform == "android":
             self.root.ids.label_point.text =  results_item
         
         def fetch_data(self, point):
-            url = 'http://192.168.30.29:5000/Point' #IP of server to connect database
+            url = 'http://192.168.100.196:5000/Point' #IP of server to connect database
             try:
                 response = requests.get(url, json={"point": point})  # ส่ง JSON ไปหา API
                 print("Response Text:", response.text)  
@@ -1914,7 +1996,7 @@ if platform == "android":
             
         #fetch_data from aoa and rssi
         def fetch_data_map_aoa(self, point):
-            url = 'http://192.168.30.29:5000/Point_Map_aoa' #IP of server to connect database
+            url = 'http://192.168.100.49:5000/Point_Map_aoa' #IP of server to connect database
             try:
                 response = requests.get(url, json={"point": point})  #send JSON to API
                 print("Response Text:", response.text)  
@@ -1937,7 +2019,7 @@ if platform == "android":
             return []
         
         def fetch_data_map_rssi(self, point):
-            url = 'http://192.168.30.29:5000/Point_Map_rssi' #IP of server to connect database
+            url = 'http://192.168.100.49:5000/Point_Map_rssi' #IP of server to connect database
             try:
                 response = requests.get(url, json={"point": point})  #send JSON to API
                 print("Response Text:", response.text)  
@@ -1992,71 +2074,98 @@ if platform == "android":
         #show on screen
         def display_scan_results(self):
             self.scanned_devices = []
+            
             scanned_info = ''
-            A1_V, A1_H, A2_V, A2_H = 0,0,0,0
-
+            A1_V, A1_H, A2_V, A2_H = 0, 0 ,0 ,0
+            A3_V, A3_H, A4_V, A4_H = 0 ,0 ,0 ,0
             for uuid, major, rssi in self.scan_results:
                 # Logger.info(f"Result: devices: {device}")
                 # name = device._name
                 # uuid = device.uuid
                 # major = device.major
                 # minor = device._minor
-                
+                #265	78	A1_V	-73	2025-02-25 16:25:58
                 if uuid == None:
                     scanned_info = f"Don't have any Device is Match"
                 else:
-                    if ((uuid == "4e543f43cdb34bbe87948a08bb2681db") & (major == 111)):
+                    if ((uuid == "a1111111111111111111111111111111") & (major == 111)):
                         name = "A1(VER)"
                         anchor_id = "A1_V"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A1_V = rssi
                         
-                    elif ((uuid == "4e543f43cdb34bbe87948a08bb2681db") & (major == 888)):
+                    elif ((uuid == "a1111111111111111111111111111111") & (major == 888)):
                         name = "A1(HOR)"
                         anchor_id = "A1_H"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A1_H = rssi
                         
-                    elif ((uuid == "d8ac484e4fbb4b36bf12c249ab83673b") & (major == 111)):
+                        
+                    elif ((uuid == "b2222222222222222222222222222222") & (major == 111)):
                         name = "A2(VER)"
                         anchor_id = "A2_V"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A2_V = rssi
                         
-                    elif ((uuid == "d8ac484e4fbb4b36bf12c249ab83673b") & (major == 888)):
+                    elif ((uuid == "b2222222222222222222222222222222") & (major == 888)):
                         name = "A2(HOR)"
                         anchor_id = "A2_H"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A2_H = rssi
                         
+
+                    ######################## เพิ่ม A3,A4 ###########################
+                    elif ((uuid == "c3333333333333333333333333333333") & (major == 111)):  # ใส่ UUID ของ A3
+                        name = "A3(VER)"
+                        anchor_id = "A3_V"
+                        scanned_info += f"{name}, RSSI: {rssi} dBm\n"
+                        A3_V = rssi
+                    elif ((uuid == "c3333333333333333333333333333333") & (major == 888)):  # ใส่ UUID ของ A3
+                        name = "A3(HOR)"
+                        anchor_id = "A3_H"
+                        scanned_info += f"{name}, RSSI: {rssi} dBm\n"
+                        A3_H = rssi
+                    elif ((uuid == "d4444444444444444444444444444444") & (major == 111)):  # ใส่ UUID ของ A4
+                        name = "A4(VER)"
+                        anchor_id = "A4_V"
+                        scanned_info += f"{name}, RSSI: {rssi} dBm\n"
+                        A4_V = rssi
+                    elif ((uuid == "d4444444444444444444444444444444") & (major == 888)):  # ใส่ UUID ของ A4
+                        name = "A4(HOR)"
+                        anchor_id = "A4_H"
+                        scanned_info += f"{name}, RSSI: {rssi} dBm\n"
+                        A4_H = rssi
+                        
                     else:
-                        name = "3"
+                        name = "5"
+                        anchor_id = "UNKNOWN"
                         scanned_info += f"A: {name}, RSSI: {rssi} dBm,\n Major: {major}\n"
-                        A1_V = A1_H = A2_V = A2_H = rssi
+                        A1_V = A1_H = A2_V = A2_H = A3_V = A3_H = A4_V = A4_H = rssi
+                    
                 
                 self.scanned_devices.append({"rssi": rssi, "anchor_id": anchor_id})
                 
             #all are found then calculated
-            x1, y1 = self.process_data_aoa_rssi(A1_V, A1_H, A2_V, A2_H)
-            x2, y2 = self.process_rssi(A1_V, A1_H, A2_V, A2_H)
-            self.results_status(x1, y1, x2, y2)
-            self.x_cal = x1
-            self.y_cal = y1
+            # x1, y1 = self.process_data_aoa_rssi(A1_V, A1_H, A2_V, A2_H, A3_V, A3_H, A4_V, A4_H)
+            # x2, y2 = self.process_rssi(A1_V, A1_H, A2_V, A2_H, A3_V, A3_H, A4_V, A4_H)
+            # self.results_status(x1, y1, x2, y2)
+            # self.x_cal = x1
+            # self.y_cal = y1
             
-            scanned_info += f"positions(AoA): ({x1:.2f}, {y1:.2f})\n"
-            scanned_info3 = f"({x1:.2f}, {y1:.2f})\n"
-            if x2 is not (-1) and y2 is not (-1):
-                scanned_info += f"positions(rssi): ({x2:.2f}, {y2:.2f})\n"
-                scanned_info4 = f"({x2:.2f}, {y2:.2f})\n"
-            else:
-                scanned_info += f"positions(rssi): x,y error\n"
-                scanned_info4 = f"x,y error\n"
+            # scanned_info += f"positions(AoA): ({x1:.2f}, {y1:.2f})\n"
+            # scanned_info3 = f"({x1:.2f}, {y1:.2f})\n"
+            # if x2 is not (-1) and y2 is not (-1):
+            #     scanned_info += f"positions(rssi): ({x2:.2f}, {y2:.2f})\n"
+            #     scanned_info4 = f"({x2:.2f}, {y2:.2f})\n"
+            # else:
+            #     scanned_info += f"positions(rssi): x,y error\n"
+            #     scanned_info4 = f"x,y error\n"
                 
             self.root.ids.label.text = scanned_info
-            self.root.ids.label_aoa_cal.text = scanned_info3
-            self.root.ids.label_rssi_cal.text = scanned_info4
-            Logger.info('Bluetooth: ' + '\n' + scanned_info)
-            return x1, y1
+            # self.root.ids.label_aoa_cal.text = scanned_info3
+            # self.root.ids.label_rssi_cal.text = scanned_info4
+            # Logger.info('Bluetooth: ' + '\n' + scanned_info)
+            # return x1, y1
         #--------------------------------------------------------------------------
         
         #function calculate status of point
@@ -2265,32 +2374,36 @@ if platform == "android":
         
         #send all data to database    
         def send_data(self):
-            if self.x_real is None or self.y_real is None:
-                self.show_alert("Please select a Point! Don't have a data to send")
-                return  #Stop if not select
-            elif self.start is None:
+            Logger.info(f"condition of scan: {self.scanning}")
+            Logger.info(f"condition of scan: {self.scanner_dispatcher}")
+            Logger.info(f"has start_scan: {hasattr(self.scanner_dispatcher, 'start_scan')}")
+            self.stop_service()
+            #if self.x_real is None or self.y_real is None:
+                #self.show_alert("Please select a Point! Don't have a data to send")
+                #return  #Stop if not select
+            if self.start is None:
                 self.show_alert("Please start scan! Don't have a data to send")
                 return  #Stop if not select
-            elif self.status_aoa is None or self.status_rssi is None:
-                self.show_alert("scanning..., please wait a moment)")
-                return  #Stop if not select
+            # elif self.status_aoa is None or self.status_rssi is None:
+            #     self.show_alert("scanning..., please wait a moment)")
+            #     return  #Stop if not select
             
-            url = "http://192.168.30.29:5000/rssi_data" #IP of server to connect database
-            for device in self.scanned_point:
-                data = {
-                    "point": device['point']
+            # url = "http://192.168.100.49:5000/rssi_data" #IP of server to connect database
+            # for device in self.scanned_point:
+            #     data = {
+            #          "point": device['point']
+                   
+            #     }
+            #     try:
+            #         response = requests.post(url, json=data)
+            #         response.raise_for_status()
+            #         Logger.info(f'Successfully sent data to API: {response.json()}')
+            #     except requests.exceptions.HTTPError as http_err:
+            #         Logger.error(f'HTTP error occurred: {http_err}')
+            #     except Exception as err:
+            #         Logger.error(f'Other error occurred: {err}')
                     
-                }
-                try:
-                    response = requests.post(url, json=data)
-                    response.raise_for_status()
-                    Logger.info(f'Successfully sent data to API: {response.json()}')
-                except requests.exceptions.HTTPError as http_err:
-                    Logger.error(f'HTTP error occurred: {http_err}')
-                except Exception as err:
-                    Logger.error(f'Other error occurred: {err}')
-                    
-            url_datalist = "http://192.168.30.29:5000/rssi_data_list" #IP of server to connect database
+            url_datalist = "http://192.168.100.49:5000/rssi_data_list" #IP of server to connect database
             for device in self.scanned_devices:
                 data = {
                     "rssi": device.get('rssi'),  # ใช้ .get() เพื่อหลีกเลี่ยง KeyError
@@ -2305,8 +2418,8 @@ if platform == "android":
                     Logger.error(f'HTTP error occurred: {http_err}')
                 except Exception as err:
                     Logger.error(f'Other error occurred: {err}')
-               
-            url2 = "http://192.168.30.29:5000/position_aoa" #IP of server to connect database
+            
+            '''url2 = "http://192.168.100.196:5000/position_aoa" #IP of server to connect database
             for device in self.scanned_aoa_cal_point:
                 data = {
                     "x": device.get('x'),
@@ -2323,7 +2436,7 @@ if platform == "android":
                 except Exception as err:
                     Logger.error(f'Other error occurred(AoA): {err}')
                     
-            url3 = "http://192.168.30.29:5000/position_rssi" #IP of server to connect database
+            url3 = "http://192.168.100.151:5000/position_rssi" #IP of server to connect database
             for device in self.scanned_rssi_cal_point:
                 data = {
                     "x": device.get('x'),
@@ -2338,25 +2451,56 @@ if platform == "android":
                 except requests.exceptions.HTTPError as http_err:
                     Logger.error(f'HTTP error occurred(RSSI): {http_err}')
                 except Exception as err:
-                    Logger.error(f'Other error occurred(RSSI): {err}')
-                    
+                    Logger.error(f'Other error occurred(RSSI): {err}')'''
+
             self.root.ids.status.text = "Data Sent"
             self.root.ids.status2.text = "Data Sent"
+        
+        def testxy(self):
+            x_input = self.root.ids.X_input.text
+            y_input = self.root.ids.Y_input.text
+
+            if x_input == "" or y_input == "":
+                self.show_alert("Please select a Point!")
+                return  #Stop if not select
+            
+            
+            url_datalist = "http://192.168.100.49:5000/rssi_x_y_list" #IP of server to connect database
+            for device in self.scanned_devices:
+                data = {
+                    "rssi": device.get('rssi'),  # ใช้ .get() เพื่อหลีกเลี่ยง KeyError
+                    "anchor_id": device['anchor_id'],
+                    "x": x_input,
+                    "y": y_input,
+                    "name": "Galaxy S22"
+                }
+                try:
+                    response = requests.post(url_datalist, json=data)
+                    response.raise_for_status()
+                    Logger.info(f'Successfully sent data to Server: {response.json()}')
+                except requests.exceptions.HTTPError as http_err:
+                    Logger.error(f'HTTP error occurred: {http_err}')
+                except Exception as err:
+                    Logger.error(f'Other error occurred: {err}')
+                
+            self.root.ids.X_input.text = ""
+            self.root.ids.status.text = "Data Sent"
         #--------------------------------------------------------------------------
 
         #for stop scan
         def stop_service(self):
-            if self.x_real is None or self.y_real is None:
-                self.show_alert("Please select a Point! There is no data to stop")
-                return  #Stop if not select
-            elif self.start is None:
-                self.show_alert("Please start scan! There is no data to stop")
-                return  #Stop if not start
+            # if self.x_real is None or self.y_real is None:
+            #     self.show_alert("Please select a Point! There is no data to stop")
+            #     return  #Stop if not select
+            # elif self.start is None:
+            #     self.show_alert("Please start scan! There is no data to stop")
+            #     return  #Stop if not start
             
             self.scanning = False
             self.service.stop(self.activity)
             Logger.info("Scan: Stop Scanning")
             self.stop_scan()
+            Logger.info(f"has start_scan: {hasattr(self.scanner_dispatcher, 'start_scan')}")
             self.root.ids.status.text = "Stop Scanning"
             self.root.ids.status2.text = "Stop Scanning"
         
@@ -2379,7 +2523,7 @@ if platform == "android":
             
         #--------------------------------------------------------------------------
         #AoA calculation algorithm
-        def process_data_aoa_rssi(self, A1_V, A1_H, A2_V, A2_H):
+        def process_data_aoa_rssi(self, A1_V, A1_H, A2_V, A2_H, A3_V, A3_H, A4_V, A4_H):
             
             #find file Excel in folder assets
             file_path_1 = resource_find("assets/quadratic_horizontal.xlsx")
@@ -2393,7 +2537,7 @@ if platform == "android":
             else:
                 Logger.error("1:One or both Excel files are missing in the assets folder.")
             
-            
+            '''
             data_QLH = data_QLV = data_QRH = data_QRV = data_LL = data_LR = None
             data_QLH = pd.read_excel(file_path_1, sheet_name='QLH', engine='openpyxl')
             data_QLV = pd.read_excel(file_path_1, sheet_name='QLH', engine='openpyxl')
@@ -2402,7 +2546,7 @@ if platform == "android":
 
             data_LL = pd.read_excel(file_path_2, sheet_name='LL', engine='openpyxl')
             data_LR = pd.read_excel(file_path_2, sheet_name='LR', engine='openpyxl')
-            
+            '''
             #Show some data
             if data_QLH is not None:
                 print(data_QLH.head())
@@ -2423,7 +2567,13 @@ if platform == "android":
             rssi_ver_1 = A1_V # Ver_1
             rssi_hor_2 = A2_H # Hor_2
             rssi_ver_2 = A2_V # Ver_2
-
+            
+            ##############เพิ่มขึ้นมา 1 ตัวนะครับ จะได้ 4 ตัวครับ
+            rssi_hor_3 = A3_H # Hor_1
+            rssi_ver_3 = A3_V # Ver_1
+            rssi_hor_4 = A4_H # Hor_1
+            rssi_ver_4 = A4_V # Ver_1
+                ############################################
             result_alpha = []
             result_beta = []
             result_pair_alpha_beta = []
@@ -2439,6 +2589,7 @@ if platform == "android":
             # Anchor 1
             # calculatate "alpha"
             # Store the alpha value in the result_alpha array
+            
             for index1, row in rows_from_QLH_onward.iterrows():
                 a = row['a']
                 b = row['b']
@@ -2561,6 +2712,141 @@ if platform == "android":
                     result_theta_phi_delta.append(theta)
                 result_distances.extend([distance] * 4)
 
+#################################เพิ่ม เพื่อคำนวณระยะทางที่ถูกต้องที่สุด##########################################################
+                # Anchor 3
+            # calculatate "alpha"
+            # Store the alpha value in the result_alpha array
+            
+            for index1, row in rows_from_QLH_onward.iterrows():
+                a = row['a']
+                b = row['b']
+                c = row['c']
+                discriminant1 = (b**2) - (4 * a * (c - rssi_hor_3))
+                # distance = row['distance']
+                # print(f"a: {a:.6f}")
+                # print(f"b: {b:.6f}")
+                # print(f"c: {c:.6f}\n")
+
+                alpha1 = alpha2 = float('nan')
+                if discriminant1 >= 0:
+                    alpha1 = ((-b) + math.sqrt(discriminant1)) / (2 * a)
+                    alpha2 = ((-b) - math.sqrt(discriminant1)) / (2 * a)
+                else:
+                    alpha1 = alpha2 = float('nan')
+                    
+                result_alpha.append((alpha1, alpha2))
+            # print(result_alpha)
+
+            # calculate "beta" in the row matching alpha
+            # Take the theta value and pair(alpha, beta) in array --> result_theta_alpha_beta and result_pair_alpha_beta respectively
+            for index2, row in rows_from_QLV_onward.iterrows():
+                if index2 >= len(result_alpha):  #If the number of beta rows is greater than alpha, stop
+                    break
+                a = row['a']
+                b = row['b']
+                c = row['c']
+                discriminant2 = (b**2) - (4 * a * (c - rssi_ver_3))
+
+                beta1 = beta2 = float('nan')
+                if discriminant2 >= 0:
+                    beta1 = ((-b) + math.sqrt(discriminant2)) / (2 * a)
+                    beta2 = ((-b) - math.sqrt(discriminant2)) / (2 * a)
+                else:
+                    beta1 = beta2 = float('nan')
+                
+                # matching 'alpha' and 'beta' at the same index
+                alpha1, alpha2 = result_alpha[index2]
+                distance = row['distance']
+                pairs = [
+                    [alpha1, (90 - beta1)],
+                    [alpha1, (90 - beta2)],
+                    [alpha2, (90 - beta1)],
+                    [alpha2, (90 - beta2)]
+                ]
+
+                # keep pair(alpha, beta) and calculate theta
+                for pair in pairs:
+                    alpha, beta = pair
+                    # check if alpha < 0 or beta > 90, theta is null
+                    if (alpha >= 0 and beta <= 90):
+                        theta = alpha + beta
+                    else:
+                        theta = float('nan')
+                    
+                    result_pair_alpha_beta.append(pair)
+                    result_theta_alpha_beta.append(theta)
+                result_distances.extend([distance] * 4)
+            # print(result_pair_alpha_beta)
+
+
+            # Anchor 4
+            # calculatate "alpha"
+            # Store the alpha value in the result_alpha array
+            
+            for index1, row in rows_from_QLH_onward.iterrows():
+                a = row['a']
+                b = row['b']
+                c = row['c']
+                discriminant1 = (b**2) - (4 * a * (c - rssi_hor_4))
+                # distance = row['distance']
+                # print(f"a: {a:.6f}")
+                # print(f"b: {b:.6f}")
+                # print(f"c: {c:.6f}\n")
+
+                alpha1 = alpha2 = float('nan')
+                if discriminant1 >= 0:
+                    alpha1 = ((-b) + math.sqrt(discriminant1)) / (2 * a)
+                    alpha2 = ((-b) - math.sqrt(discriminant1)) / (2 * a)
+                else:
+                    alpha1 = alpha2 = float('nan')
+                    
+                result_alpha.append((alpha1, alpha2))
+            # print(result_alpha)
+
+            # calculate "beta" in the row matching alpha
+            # Take the theta value and pair(alpha, beta) in array --> result_theta_alpha_beta and result_pair_alpha_beta respectively
+            for index2, row in rows_from_QLV_onward.iterrows():
+                if index2 >= len(result_alpha):  #If the number of beta rows is greater than alpha, stop
+                    break
+                a = row['a']
+                b = row['b']
+                c = row['c']
+                discriminant2 = (b**2) - (4 * a * (c - rssi_ver_4))
+
+                beta1 = beta2 = float('nan')
+                if discriminant2 >= 0:
+                    beta1 = ((-b) + math.sqrt(discriminant2)) / (2 * a)
+                    beta2 = ((-b) - math.sqrt(discriminant2)) / (2 * a)
+                else:
+                    beta1 = beta2 = float('nan')
+                
+                # matching 'alpha' and 'beta' at the same index
+                alpha1, alpha2 = result_alpha[index2]
+                distance = row['distance']
+                pairs = [
+                    [alpha1, (90 - beta1)],
+                    [alpha1, (90 - beta2)],
+                    [alpha2, (90 - beta1)],
+                    [alpha2, (90 - beta2)]
+                ]
+
+                # keep pair(alpha, beta) and calculate theta
+                for pair in pairs:
+                    alpha, beta = pair
+                    # check if alpha < 0 or beta > 90, theta is null
+                    if (alpha >= 0 and beta <= 90):
+                        theta = alpha + beta
+                    else:
+                        theta = float('nan')
+                    
+                    result_pair_alpha_beta.append(pair)
+                    result_theta_alpha_beta.append(theta)
+                result_distances.extend([distance] * 4)
+            # print(result_pair_alpha_beta)
+############################################################################################
+
+
+
             # function for find "theta" value close to 90
             # Anchor1
             def find_closest_to_ninety_anchor1(theta_values, pairs, row_indices, data_frame):
@@ -2613,6 +2899,58 @@ if platform == "android":
                             # print(f"Found theta: {theta}, closest distance: {closest_distance}, from index: {row_index}")
                 return closest_value, closest_pair, closest_row_index, closest_distance
 
+######################################################เพิ่ม ตรงนี้######################################################
+            # Anchor3
+            def find_closest_to_ninety_anchor3(theta_values, pairs, row_indices, data_frame):
+                closest_value = None
+                closest_diff = float('inf')
+                closest_pair = None
+                closest_row_index = None
+                closest_distance = None
+                
+                distances = [i * 0.5 for i in range(1, 31)]  # สร้างค่า 0.5 ถึง 22.5 (45 ค่า)
+                distances = [d for d in distances for _ in range(4)]  # ทำให้แต่ละค่าเกิด 4 ครั้ง
+                # print(distances)
+
+                for theta, pair, row_index in zip(theta_values, pairs, row_indices):
+                    if isinstance(theta, float):
+                        diff = abs(90 - theta)
+                        if diff < closest_diff:
+                            closest_diff = diff
+                            closest_value = theta
+                            closest_pair = pair
+                            closest_row_index = row_index
+                            # ตั้งค่า closest_distance ตามค่าในรายการ distances
+                            closest_distance = distances[row_index] if row_index < len(distances) else None
+                            # print(f"Found theta: {theta}, closest distance: {closest_distance}, from index: {row_index}")
+                return closest_value, closest_pair, closest_row_index, closest_distance
+
+            # Anchor4
+            def find_closest_to_ninety_anchor4(theta_values, pairs, row_indices, data_frame):
+                closest_value = None
+                closest_diff = float('inf')
+                closest_pair = None
+                closest_row_index = None
+                closest_distance = None
+                
+                distances = [i * 0.5 for i in range(1, 31)]  # สร้างค่า 0.5 ถึง 22.5 (45 ค่า)
+                distances = [d for d in distances for _ in range(4)]  # ทำให้แต่ละค่าเกิด 4 ครั้ง
+                # print(distances)
+
+                for theta, pair, row_index in zip(theta_values, pairs, row_indices):
+                    if isinstance(theta, float):
+                        diff = abs(90 - theta)
+                        if diff < closest_diff:
+                            closest_diff = diff
+                            closest_value = theta
+                            closest_pair = pair
+                            closest_row_index = row_index
+                            # ตั้งค่า closest_distance ตามค่าในรายการ distances
+                            closest_distance = distances[row_index] if row_index < len(distances) else None
+                            # print(f"Found theta: {theta}, closest distance: {closest_distance}, from index: {row_index}")
+                return closest_value, closest_pair, closest_row_index, closest_distance
+########################################################################################################
+
 
             # ค้นหาค่าที่ใกล้ 90 ที่สุดในผลลัพธ์ theta
             # สร้างตัวแปรเป็นอาเรย์เพื่อเก็บค่า
@@ -2623,6 +2961,16 @@ if platform == "android":
             closest_to_ninety_anchor2 = None
             closest_pair_to_ninety_anchor2 = None
             closest_distance_anchor2 = None
+            
+            ###############เพิ่มเพิ่มสำหรับ Anchor3 และ Anchor4#########
+            closest_to_ninety_anchor3 = None
+            closest_pair_to_ninety_anchor3 = None
+            closest_distance_anchor3 = None
+
+            closest_to_ninety_anchor4 = None
+            closest_pair_to_ninety_anchor4 = None
+            closest_distance_anchor4 = None
+            ########################################################
 
             # หาค่าที่ใกล้เคียง 90° มากที่สุดใน Anchor1 แล้วเก็บค่าตัวแปรที่สร้างไว้
             for theta_values, pairs in zip(result_theta_alpha_beta, result_pair_alpha_beta):
@@ -2641,7 +2989,27 @@ if platform == "android":
                         closest_to_ninety_anchor2 = closest_value
                         closest_pair_to_ninety_anchor2 = closest_pair
                         closest_distance_anchor2 = distance
-                    
+
+
+        #################################เพิ่มเพิ่มเติมเพื่อหาค่าที่ใกล้เคียง 90° มากที่สุดใน Anchor3 แล้วเก็บค่าตัวแปรที่สร้างไว้####################################
+            # หาค่าที่ใกล้เคียง 90° มากที่สุดใน Anchor3 แล้วเก็บค่าตัวแปรที่สร้างไว้      
+            for theta_values, pairs in zip(result_theta_phi_delta, result_pair_phi_delta):
+                closest_value, closest_pair, row_index, distance = find_closest_to_ninety_anchor3(result_theta_phi_delta, result_pair_phi_delta, range(len(result_theta_phi_delta)), rows_from_QRH_onward)
+                if closest_value is not None:
+                    if closest_to_ninety_anchor2 is None or abs(90 - closest_value) < abs(90 - closest_to_ninety_anchor2):
+                        closest_to_ninety_anchor2 = closest_value
+                        closest_pair_to_ninety_anchor2 = closest_pair
+                        closest_distance_anchor2 = distance
+
+                # หาค่าที่ใกล้เคียง 90° มากที่สุดใน Anchor4 แล้วเก็บค่าตัวแปรที่สร้างไว้      
+            for theta_values, pairs in zip(result_theta_phi_delta, result_pair_phi_delta):
+                closest_value, closest_pair, row_index, distance = find_closest_to_ninety_anchor4(result_theta_phi_delta, result_pair_phi_delta, range(len(result_theta_phi_delta)), rows_from_QRH_onward)
+                if closest_value is not None:
+                    if closest_to_ninety_anchor2 is None or abs(90 - closest_value) < abs(90 - closest_to_ninety_anchor2):
+                        closest_to_ninety_anchor2 = closest_value
+                        closest_pair_to_ninety_anchor2 = closest_pair
+                        closest_distance_anchor2 = distance
+        ###############################################################################################################################
                         
             # แสดงผลลัพธ์ของค่า theta ที่ใกล้ 90 ที่สุด
             # Anchor1
@@ -2660,6 +3028,23 @@ if platform == "android":
             else:
                 print("No valid theta values found.\n")
 
+#############################เพิ่ม Anchor3 และ Anchor4 ที่สร้างไว้ในการคำนวณหาค่า theta ที่ใกล้ 90 ที่สุด
+            # Anchor3
+            if closest_to_ninety_anchor3 is not None:
+                print(f"The value closest to 90 is (Anchor3): {closest_to_ninety_anchor3:.5f}")
+                print(f"Corresponding pair (alpha, beta): [{closest_pair_to_ninety_anchor3[0]:.5f}, {closest_pair_to_ninety_anchor3[1]:.5f}]")
+                print(f"Distance (meter): {closest_distance_anchor3}\n")
+            else:
+                print("No valid theta values found.\n")
+            
+            # Anchor4
+            if closest_to_ninety_anchor4 is not None:
+                print(f"The value closest to 90 is (Anchor4): {closest_to_ninety_anchor4:.5f}")
+                print(f"Corresponding pair (alpha, beta): [{closest_pair_to_ninety_anchor4[0]:.5f}, {closest_pair_to_ninety_anchor4[1]:.5f}]")
+                print(f"Distance (meter): {closest_distance_anchor4}\n")
+            else:
+                print("No valid theta values found.\n")
+#########################################################################################
 
             # คำนวณ result_alpha_lin สำหรับค่า alpha ที่มี distance เดียวกับ closest_distance_anchor1
             result_alpha_lin = []
@@ -2686,7 +3071,31 @@ if platform == "android":
             print(f"alpha_linear: {result_alpha_lin}")
             print(f"phi_linear: {result_phi_lin}")
             
-            
+            ##################เพิ่ม  Anchor3 และ Anchor4 ที่สร้างไว้ในการคำนวณหาค่า theta ที่ใกล้ 90 ที่สุด##################
+                # คำนวณ result_alpha_lin สำหรับค่า alpha ที่มี distance เดียวกับ closest_distance_anchor3
+            result_alpha_lin = []
+            for _, row in rows_from_LL_onward.iterrows():
+                if row['distance'] == closest_distance_anchor3:
+                    a = row['a']
+                    b = row['b']
+                    alpha = ((rssi_hor_3 - rssi_ver_3) - b) / a
+                    # if alpha > 90:
+                    #     alpha = alpha % 90
+                    result_alpha_lin.append(alpha)
+
+                # คำนวณ result_alpha_lin สำหรับค่า alpha ที่มี distance เดียวกับ closest_distance_anchor1
+            result_alpha_lin = []
+            for _, row in rows_from_LL_onward.iterrows():
+                if row['distance'] == closest_distance_anchor4:
+                    a = row['a']
+                    b = row['b']
+                    alpha = ((rssi_hor_4 - rssi_ver_4) - b) / a
+                    # if alpha > 90:
+                    #     alpha = alpha % 90
+                    result_alpha_lin.append(alpha)
+            ######################################################################
+
+
             # จับคู่ alpha และ phi ที่คำนวณได้จาก result_alpha_lin และ result_phi_lin
             result_pair_alpha_phi = []
             alpha11 = None
@@ -2719,33 +3128,65 @@ if platform == "android":
         
         #--------------------------------------------------------------------------
         #RSSI calculation algorithm
-        def process_rssi(self, A1_V, A1_H, A2_V, A2_H):
+        
+        def process_rssi(self, A1_V, A1_H, A2_V, A2_H, A3_V, A3_H, A4_V, A4_H):
             def calculation_distance(rssi, A, n):
                 distance = 10 ** ((A - rssi) / (10 * n))
                 return distance
 
+        #ค่าเหล่านี้ได้มาจาก:
+        # วางอุปกรณ์ห่างกัน 1 เมตรพอดี
+        # วัดค่า RSSI หลายครั้ง
+        # หาค่าเฉลี่ย
+        # ใช้เป็นค่าอ้างอิง (Reference) สำหรับคำนวณระยะทาง 
+                
             # RSSI 1 m. at Anchor 1
-            A_hor_1 = -48
-            A_ver_1 = -47
+            A_hor_1 = -48  # สัญญาณแรงกว่า (ใกล้ 0 = แรงกว่า)
+            A_ver_1 = -47  # สัญญาณอ่อนกว่า (ไกล 0 = อ่อนกว่า)
 
             # RSSI 1 m. at Anchor 2
             A_hor_2 = -59
             A_ver_2 = -54
+                                
+            # RSSI 1 m. at Anchor 3                  
+            A_hor_3 = -52  # ค่าที่ต้อง calibrate จริง
+            A_ver_3 = -50  # ค่าที่ต้อง calibrate จริง
+
+            # RSSI 1 m. at Anchor 4 
+            A_hor_4 = -55  # ค่าที่ต้อง calibrate จริง
+            A_ver_4 = -53  # ค่าที่ต้อง calibrate จริง
+
 
             # RSSI 1 m. combined
             A_all_1 = round((A_hor_1 + A_ver_1) / 2)
             A_all_2 = round((A_hor_2 + A_ver_2) / 2)
+            A_all_3 = round((A_hor_3 + A_ver_3) / 2)
+            A_all_4 = round((A_hor_4 + A_ver_4) / 2)
 
             n_1 = 1.5
             n_2 = 1.5
+            n_3 = 1.5
+            n_4 = 1.5
             
             rssi_ver_1 = A1_V
             rssi_ver_2 = A2_V
             rssi_hor_1 = A1_H
             rssi_hor_2 = A2_H
 
+            #######เพิ่ม Anchor3 และ Anchor4 ที่สร้างไว้ในการคำนวณหาค่า theta ที่ใกล้ 90 ที่สุด##################
+            rssi_ver_3 = A3_V
+            rssi_ver_4 = A4_V
+            rssi_hor_3 = A3_H
+            rssi_hor_4 = A4_H
+            ############################################################
+
             average_1 = round((rssi_hor_1 + rssi_ver_1) / 2)
             average_2 = round((rssi_hor_2 + rssi_ver_2) / 2)
+
+            #เพิ่ม Anchor3 และ Anchor4 ที่สร้างไว้ในการคำนวณหาค่า theta ที่ใกล้ 90 ที่สุด##################
+            average_3 = round((rssi_hor_3 + rssi_ver_3) / 2)
+            average_4 = round((rssi_hor_4 + rssi_ver_4) / 2)
+            ############################################################
 
             # distance Anchor 1
             distance_avg_1 = calculation_distance(average_1, A_all_1, n_1)
@@ -2756,6 +3197,18 @@ if platform == "android":
             distance_avg_2 = calculation_distance(average_2, A_all_2, n_2)
             distance_hor_2 = calculation_distance(rssi_hor_2, A_hor_2, n_2)
             distance_ver_2 = calculation_distance(rssi_ver_2, A_ver_2, n_2)
+            
+            # distance Anchor 3
+            distance_avg_3 = calculation_distance(average_3, A_all_3, n_3)
+            distance_hor_3 = calculation_distance(rssi_hor_3, A_hor_3, n_3)
+            distance_ver_3 = calculation_distance(rssi_ver_3, A_ver_3, n_3)
+
+            # distance Anchor 4
+            distance_avg_4 = calculation_distance(average_3, A_all_4, n_4)
+            distance_hor_4 = calculation_distance(rssi_hor_3, A_hor_4, n_4)
+            distance_ver_4 = calculation_distance(rssi_ver_3, A_ver_4, n_4)
+            
+            
 
 
             print(f"average (1): {distance_avg_1:.3f}")
@@ -2766,6 +3219,15 @@ if platform == "android":
 
             print(f"ver (1): {distance_ver_1:.3f}")
             print(f"ver (2): {distance_ver_2:.3f}\n")
+
+            print(f"average (3): {distance_avg_3:.3f}")
+            print(f"average (4): {distance_avg_4:.3f}\n")
+
+            print(f"hor (3): {distance_hor_3:.3f}")
+            print(f"hor (4): {distance_hor_4:.3f}\n")
+
+            print(f"ver (3): {distance_ver_3:.3f}")
+            print(f"ver (4): {distance_ver_4:.3f}\n")
 
 
             def find_coordinates(x1, y1, distance1, x2, y2, distance2):
@@ -2804,6 +3266,5 @@ if platform == "android":
                 print(e)
                 
             return x_ver,y_ver
-
 if __name__ == "__main__":
     MyApp().run()

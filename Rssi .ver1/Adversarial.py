@@ -289,7 +289,7 @@ if __name__ == "__main__":
     domain2_train = np.concatenate([domain2_train, domain2_test], axis=0)
 
     # สร้าง test set ที่ว่างเปล่า
-    data_test = np.array([]).reshape(0, T_MAX, 6, 121, 1)
+    data_test = np.array([]).reshape(0, T_MAX, 4, 8, 1)
     label_test = np.array([])
     domain_test = np.array([])
     domain2_test = np.array([])
@@ -304,7 +304,11 @@ if __name__ == "__main__":
 
     print('Test_set:' , label_test.shape[0], 'samples' )
     print('domain set:' + str(domain_test) )
-    print('train data shape:', data_train)
+
+    combined_data = np.zeros((1, 1, 4, 8, 1))
+    for i in range(4):
+        combined_data[0, 0, i, :, 0] = data_train[i, 0, 0, :, 0]
+    print('train data shape:', combined_data)
 
     print("-" * 100)
 

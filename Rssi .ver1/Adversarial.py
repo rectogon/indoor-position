@@ -33,7 +33,7 @@ import matplotlib.pyplot as plt
 use_existing_model = False
 fraction_for_test = 0.1
 data_dir = '/home/alansmith/Work-3'
-ALL_MOTION = [1,2,3,4,5]  # 5 height classes
+ALL_MOTION = [1]  # 5 height classes
 N_MOTION = len(ALL_MOTION)
 N_LOCATION = 15  # 15 x position
 N2_LOCATION = 24 # 18 y position
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     import pandas as pd
     import numpy as np
 
-    df = pd.read_csv('rssi_data_list1.csv', sep=',')
+    df = pd.read_csv('rssi_data_list.csv', sep=',')
     grouped = df.groupby(['X','Y'])
 
     anchor_map = {'A1_H':0, 'A1_V':1, 'A2_H':2, 'A2_V':3, 'A3_H':4, 'A3_V':5, 'A4_H':6, 'A4_V':7}
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     doppler_data = []
 
     for rssi_array in samples:
-        fake_data = np.zeros((T_MAX, 6, 121, 1), dtype=np.float32)
+        fake_data = np.zeros((T_MAX, 4, 8, 1), dtype=np.float32)
         for t in range(T_MAX):
             fake_data[t, 0, :8, 0] = rssi_array  # วาง rssi ใน 8 pixel แถวแรก
         doppler_data.append(fake_data)
@@ -248,13 +248,13 @@ if __name__ == "__main__":
     label_array = np.ones(len(doppler_data), dtype=np.int32)  # fix height=1
 
     doppler_data = np.array(doppler_data)  # shape (samples,5,6,121,1)
-    np.savez('dataset_rssi.npz', 
+    np.savez('dataset_rssi1.npz', 
          data=doppler_data, 
          label=label_array, 
          domain=X_idx, 
          domain2=Y_idx)
 
-    npz_file = "/home/alansmith/Work-3/dataset_rssi.npz"
+    npz_file = "/home/alansmith/Work-3/dataset_rssi1.npz"
     
     #data, label, domain, domain2 = load_data(data_dir)
     data, label, domain, domain2 = load_data(npz_file)
@@ -271,8 +271,11 @@ if __name__ == "__main__":
         if X_index[i] == 0 and Y_index[i] == 11.5:
             print(f"Found at index {i}")
             print(doppler_data[i, 0, 0, :8, 0])  # ดู RSSI 8 ค่า
+
     print(i)
-    print(doppler_data[60, 0, 0, :8, 0])
+
+    if len(doppler_data) > 60:
+        print(doppler_data[60, 0, 0, :8, 0])
     
     # Split train and test
     [data_train, data_test, label_train, label_test, domain_train, domain_test, domain2_train, domain2_test] = \
@@ -318,7 +321,7 @@ if __name__ == "__main__":
     data, label, domain, domain2 = load_data(npz_file)
     print("Index | RSSI Data (8 values)                                    | Domain(X)| Domain2(Y)")
 
-    for i in range(min(10, len(data))):
+    for i in range(min(8, len(data))):
         rssi_values = data[i, 0, 0, :8, 0]  # ดึง RSSI 8 ค่า
         rssi_str = "[" + ", ".join([f"{val:4.0f}" for val in rssi_values]) + "]"
         print(f"{i:5d} | {rssi_str:55} | {domain[i]:8d} | {domain2[i]:9d}")
@@ -332,7 +335,7 @@ if __name__ == "__main__":
     train_info = []
 
     # เก็บข้อมูล train_data สำหรับเปรียบเทียบ
-    for i in range(min(10, len(data_train))):
+    for i in range(min(8, len(data_train))):
         train_rssi = data_train[i, 0, 0, :8, 0]
         rssi_str = "[" + ", ".join([f"{val:4.0f}" for val in train_rssi]) + "]"
         print(f"{i:5d} | {rssi_str:55} | {domain_train[i]:8d} | {domain2_train[i]:9d}")
@@ -382,7 +385,7 @@ if __name__ == "__main__":
     print(domain_train[:10])
     #exit(0)
     # Train Model
-    model = assemble_model(input_shape=(T_MAX, 6, 121, 1), n_class=N_MOTION, n_location=N_LOCATION, n2_location=N2_LOCATION)
+    model = assemble_model(input_shape=(T_MAX, 4, 8, 1), n_class=N_MOTION, n_location=N_LOCATION, n2_location=N2_LOCATION)
     model.summary()
     print("Unique Labels (Height):", np.unique(label_train, return_counts=True))
     print("Unique X positions:", np.unique(domain_train, return_counts=True))

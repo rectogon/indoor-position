@@ -11,3 +11,6 @@ https://chatgpt.com/share/68a82c7e-dcf8-8013-86dd-02ec67eae35d
 
 ## Reciever
 https://chatgpt.com/share/68b510f9-8ebc-8013-9fe6-8ae5c955a051
+
+## วิธีการเเละโครงสร้างที่อาจใช้ทดเเทน Advertising Interrupt 
+https://copilot.microsoft.com/shares/xt6167karpBZDuCjVGw3v

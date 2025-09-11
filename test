@@ -1,0 +1,10 @@
+class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+    var centralManager: CBCentralManager?
+    
+    weak var delegate: BluetoothScanDelegate?
+    var discoveredPeripherals: [UUID: CBPeripheral] = [:]
+    var disconnectedPeripherals: [UUID: CBPeripheral] = [:] // เก็บ peripheral ที่ disconnect แล้ว
+    private var _autoReconnect: Bool = false // เปลี่ยนเป็น private
+    var maxReconnectAttempts1: Int = 3
+    var reconnectAttempts: [UUID: Int] = [:]
+    

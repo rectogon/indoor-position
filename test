@@ -1,30 +1,49 @@
-def start_service(self, loop_count=0):
-        # เช็คว่า Bluetooth เปิดอยู่ไหม
-        x_input = self.root.ids.X_input.text
-        y_input = self.root.ids.Y_input.text
-
-        if not self.is_bluetooth_enabled():
-            self.show_alert("Bluetooth ยังไม่ได้เปิด! กรุณาเปิด Bluetooth.")
-            return
+ScreenManager:
+                Screen:
+                    name: 'image_screen'
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height  # Allow it to adjust height based on content
         
-        if x_input == "" or y_input == "":
-            self.show_alert("กรุณาเลือกค่าของ X, Y!")
-            return  # หยุดหากไม่ได้เลือก
+                        # use MapWidget for map
+                        MapWidget:
+                            id: map_widget
+                            size_hint: (1, None) 
+                            height: dp(650)  
+                        
+                        BoxLayout:
+                            orientation: 'horizontal'
+                            size_hint_y: None
+                            height: "20dp"  # Set height for button row
+                            spacing: 40  
+                            padding: [10, 10]  
+                            
+                            # spacer
+                            Widget:
+                                size_hint_x: 0.2
 
-    def is_bluetooth_enabled(self):
-        # เช็คว่า Bluetooth เปิดอยู่หรือไม่
-        try:
-            return bluetooth.is_bluetooth_enabled()
-        except NotImplementedError:
-            self.show_alert("Bluetooth ไม่รองรับบนแพลตฟอร์มนี้!")
-            return False
+                            MDRaisedButton:
+                                text: "Grid"
+                                size_hint_x: None
+                                on_release: map_widget.display_grid()
+                                
+                            MDRaisedButton:
+                                text: "Pos."
+                                size_hint_x: None
+                                on_release: map_widget.toggle_labels()
 
-    def request_bluetooth_enable(self):
-        # บน iOS เราไม่สามารถเปิดการตั้งค่า Bluetooth โดยตรงได้
-        # แต่เราสามารถแสดงข้อความให้ผู้ใช้ไปเปิด Bluetooth ที่การตั้งค่าเอง
-        self.show_alert("กรุณาเปิด Bluetooth จากการตั้งค่า")
+                            MDRaisedButton:
+                                text: "Angle(L)"
+                                size_hint_x: None
+                                on_release: map_widget.draw_lines_by_angle_L()
 
-    def show_alert(self, message):
-        # ฟังก์ชันแสดงข้อความเตือน (ใช้ print เป็นตัวอย่าง)
-        print(message)
-    
+                            MDRaisedButton:
+                                text: "Angle(R)"
+                                size_hint_x: None
+                                on_release: map_widget.draw_lines_by_angle_R()
+                                
+                            # spacer
+                            Widget:
+                                size_hint_x: 0.2

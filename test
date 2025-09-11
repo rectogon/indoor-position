@@ -1,10 +1,30 @@
-class BluetoothManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    var centralManager: CBCentralManager?
-    
-    weak var delegate: BluetoothScanDelegate?
-    var discoveredPeripherals: [UUID: CBPeripheral] = [:]
-    var disconnectedPeripherals: [UUID: CBPeripheral] = [:] // เก็บ peripheral ที่ disconnect แล้ว
-    private var _autoReconnect: Bool = false // เปลี่ยนเป็น private
-    var maxReconnectAttempts1: Int = 3
-    var reconnectAttempts: [UUID: Int] = [:]
+def start_service(self, loop_count=0):
+        # เช็คว่า Bluetooth เปิดอยู่ไหม
+        x_input = self.root.ids.X_input.text
+        y_input = self.root.ids.Y_input.text
+
+        if not self.is_bluetooth_enabled():
+            self.show_alert("Bluetooth ยังไม่ได้เปิด! กรุณาเปิด Bluetooth.")
+            return
+        
+        if x_input == "" or y_input == "":
+            self.show_alert("กรุณาเลือกค่าของ X, Y!")
+            return  # หยุดหากไม่ได้เลือก
+
+    def is_bluetooth_enabled(self):
+        # เช็คว่า Bluetooth เปิดอยู่หรือไม่
+        try:
+            return bluetooth.is_bluetooth_enabled()
+        except NotImplementedError:
+            self.show_alert("Bluetooth ไม่รองรับบนแพลตฟอร์มนี้!")
+            return False
+
+    def request_bluetooth_enable(self):
+        # บน iOS เราไม่สามารถเปิดการตั้งค่า Bluetooth โดยตรงได้
+        # แต่เราสามารถแสดงข้อความให้ผู้ใช้ไปเปิด Bluetooth ที่การตั้งค่าเอง
+        self.show_alert("กรุณาเปิด Bluetooth จากการตั้งค่า")
+
+    def show_alert(self, message):
+        # ฟังก์ชันแสดงข้อความเตือน (ใช้ print เป็นตัวอย่าง)
+        print(message)
     

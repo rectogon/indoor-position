@@ -1,39 +1,8 @@
- def plot_points(self, text_item, points_aoa, points_rssi):
-            results_item = '\n'
-            results_item += f"\n{text_item}"
-            screen_manager = self.root.ids.get("screen_manager")  
-            # print("screen_managerAfter:", screen_manager)
-
-            if screen_manager:
-                map_screen = screen_manager.get_screen("map_screen")
-                map_point = map_screen.ids.get("map_point")
-                label_point_map = map_screen.ids.get("label_point_map")
-
-                if map_point:
-                    #for point AoA 
-                    for x_real, y_real in points_aoa:
-                        x_pixel, y_pixel = self.calculate_real_to_pixel(x_real, y_real)
-    
-                        print(f"Real: ({x_real}, {y_real}) -> Pixel: ({x_pixel}, {y_pixel})")
-                        map_point.plot_point_map_aoa(x_pixel, y_pixel, (x_real, y_real), text_item)
-                        
-                    #for point rssi
-                    for x_real, y_real in points_rssi:
-                        #in database position_rssi it have value --> can't calculate
-                        if x_real != "can't calculate" and y_real != "can't calculate":
-                            x_real = float(x_real) 
-                            y_real = float(y_real)
-                            x_pixel, y_pixel = self.calculate_real_to_pixel(x_real, y_real)
-
-                            print(f"Real: ({x_real}, {y_real}) -> Pixel: ({x_pixel}, {y_pixel})")
-                            map_point.plot_point_map_rssi(x_pixel, y_pixel, (x_real, y_real), text_item)
-                            
-                else:
-                    print("map_point not found in map_screen")
-                    
-                if label_point_map:
-                    label_point_map.text = results_item
-                else:
-                    print("label_point_map not found in map_screen")
-            else:
-                print("screen_manager not found in root.ids")
+ def plot_point(self, x, y, real_coord):
+            #update point
+            self.point_Estimate.pos = (x-10, y-10)
+            print(f"position calculate {x},{y}")
+            
+            #Update the label estimated coordinates
+            self.coord_label_P.text = f"({real_coord[0]:.2f}, {real_coord[1]:.2f})"
+            self.coord_label_P.pos = (x-48, y-78)

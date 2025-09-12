@@ -1,71 +1,16 @@
- class MapWidget(Widget):
-        def __init__(self, **kwargs):
-            super(MapWidget, self).__init__(**kwargs)
-            self.text_item = None
-            self.last_text_item = self.text_item
+ def calculate_real_to_pixel(self, x_real, y_real):
+            origin_x = 131 
+            origin_y = 405 
+            width = 776 
+            height = 990 
+            real_width = 14.924 
+            real_height = 18.191
             
-            # add map
-            self.image = Image(source='image_new.png', allow_stretch=True, keep_ratio=True)
-            self.image.size_hint = (None, None)
-            self.image.size = (self.width, self.height)
-            self.image.pos_hint = {"center_x": .5, "top": 0.5}  
-            self.add_widget(self.image)
-            ##add for ios
-            #Clock.schedule_once(self.update_image_size, 0)
-            
-            self.labels = []
-            self.grid_drawn = False
-            self.grid_lines = []
-            
-            self.angle_drawn_L = False
-            self.angle_lines_L = []
-            self.angle_drawn_R = False
-            self.angle_lines_R = []
-            
-            self.start_L_x, self.start_L_y = 131, 405
-            self.start_R_x, self.start_R_y = 907, 405
-            #-----
-            self.start_A_x, self.start_A_y = 302, 927
-            self.start_B_x, self.start_B_y = 505, 666
-            self.start_C_x, self.start_C_y = 380, 470
-            self.start_D_x, self.start_D_y = 708, 486
-            self.start_E_x, self.start_E_y = 848, 633
-            self.start_F_x, self.start_F_y = 224, 1221
-            # self.start_L2_x, self.start_L2_y = 131, 1378
-            # self.start_R2_x, self.start_R2_y = 907, 1378
-            
-            # Initialize labels but don't add them to the widget yet
-            self.coord_label_L = Label(text=f"A1(0, 0)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_R = Label(text=f"A2(14.924, 0)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            #-----
-            self.coord_label_A = Label(text=f"A(3.3, 9.6)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_B = Label(text=f"B(7.2, 4.8)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_C = Label(text=f"C(4.8, 1.2)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_D = Label(text=f"D(11.1, 1.5)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_E = Label(text=f"E(13.8, 4.2)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_F = Label(text=f"F(1.8, 15.00)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            # self.coord_label_L2 = Label(text=f"(0, 18.191)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            # self.coord_label_R2 = Label(text=f"(14.924, 18.191)", size_hint=(None, None), color=(0, 0, 0, 1), font_size=24)
-            self.coord_label_P = Label(text=f"(0, 0)", size_hint=(None, None), color=(1, 0, 0, 1), font_size=24)        
+            scale_x = width / real_width  # Horizontal pixel/meter ratio
+            scale_y = height / real_height  # Vertical pixel/meter ratio
 
-            # use canvas to draw
-            with self.canvas:
-                Color(0, 1, 0, 1)  #Green
-                #draw square
-                self.rect = Line(rectangle=(131, 345, 776, 990), width=1.5)  
-                
-                Color(0, 0, 0, 1)    #black
-                self.point_A1 = Ellipse(pos=(self.start_L_x-5, self.start_L_y-5), size=(15, 15))  
-                self.point_A2 = Ellipse(pos=(self.start_R_x-5, self.start_R_y-5), size=(15, 15))
-                #-----  
-                Color(0, 1, 0, 1)    #Green
-                self.pointA = Ellipse(pos=(self.start_A_x-5, self.start_A_y-5), size=(15, 15))  
-                self.pointB = Ellipse(pos=(self.start_B_x-5, self.start_B_y-5), size=(15, 15))  
-                self.pointC = Ellipse(pos=(self.start_C_x-5, self.start_C_y-5), size=(15, 15))  
-                self.pointD = Ellipse(pos=(self.start_D_x-5, self.start_D_y-5), size=(15, 15))  
-                self.pointE = Ellipse(pos=(self.start_E_x-5, self.start_E_y-5), size=(15, 15))  
-                self.pointF = Ellipse(pos=(self.start_F_x-5, self.start_F_y-5), size=(15, 15))  
-                # self.point_A3 = Ellipse(pos=(self.start_L2_x-5, self.start_L2_y-5), size=(15, 15))  
-                # self.point_A4 = Ellipse(pos=(self.start_R2_x-5, self.start_R2_y-5), size=(15, 15))  
-                Color(1, 0, 0, 1)    #red
-                self.point_Estimate = Ellipse(pos=(100, 100), size=(20, 20))  
+            #Convert real coordinates to pixel coordinates
+            x_pixel = origin_x + (x_real * (scale_x))
+            y_pixel = origin_y + (y_real * (scale_y))
+            return x_pixel, y_pixel
+        

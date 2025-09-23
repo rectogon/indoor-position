@@ -1546,7 +1546,7 @@ if platform == 'android':
                 self.connect_gatt(self.device)  # connect to device
                 Logger.info("Scan: completed")
                 # self.clear_devices()
-                    
+        '''    
         def on_device(self, device, rssi, advertisement):
             address = device.getAddress()
             name = device.getName()
@@ -1555,7 +1555,7 @@ if platform == 'android':
             uuid = None
             major = None
             minor = None
-            
+            target_mac_addresses = {"DF:42:47:17:39:50"}  # เครื่อง4     
             for item in parsed_data:
                 if item.ad_type == 9: #name
                     name = item.data.decode('utf-8')  # convert to string
@@ -1571,7 +1571,19 @@ if platform == 'android':
                         major = int(major_hex, 16)
                         minor = int(minor_hex, 16)
             
-            Logger.info(f"Discovered device with UUID: {uuid} and Major: {major}")        
+            #Logger.info(f"Discovered device with UUID: {uuid} and Major: {major} and Minor: {minor}")
+            Logger.info(
+                f"Discovered device MACD: {address}, Name: {name}, "
+                f"UUID: {uuid}, Major: {major}, Minor: {minor}, RSSI: {rssi}"
+            )
+
+            # --- ถ้าเจอ MAC ตรงเป๊ะ ---
+            if address in target_mac_addresses:
+                App.get_running_app().update_found_data(uuid, major, rssi, address)
+                Logger.info(f"[TARGET FOUND] MAC: {address}, RSSI: {rssi}")
+                self.connect_to_target(address)
+
+            
             # if uuid in self.target_uuids:
             if any(filter.get("uuid") == uuid and filter.get("major") == major for filter in self.target_filters):
                 Logger.info("found_data: completed")
@@ -1594,10 +1606,154 @@ if platform == 'android':
                 return
                     
             #self.stop_scan()
-            return name
+            return name'''
+        def on_device(self, device, rssi, advertisement):
+            address = device.getAddress()
+            name = device.getName()
+            data = advertisement.data
+            parsed_data = list(advertisement.parse(data)) 
+            
+            # ตรวจสอบ MAC address ที่ต้องการ
+            target_mac_addresses = {
+                "C6:8B:63:40:D1:2B",  #1 MAC ที่คุณเห็น
+                "C3:CB:90:87:FE:E7",  #2
+                "DF:42:47:17:39:50",  #4
+                "E6:A1:5E:A5:55:C9"   #3
+            }
+            
+            uuid = None
+            major = None
+            minor = None
+            device_data = {}
+            
+            #Logger.info(f"Processing device: {address}, Name: {name}, RSSI: {rssi}")
+            if address in target_mac_addresses:
+                for item in parsed_data:
+                    #Logger.info(f"AD Type: {item.ad_type}, Data: {item.data.hex() if hasattr(item.data, 'hex') else item.data}")
+                    
+                    if item.ad_type == 9: # Complete Local Name
+                        name = item.data.decode('utf-8')
+                        Logger.info(f"Device name: {name}")
+                        
+                    elif item.ad_type == 255:  # Manufacturer Specific Data
+                        data_bytes = item.data
+                        #Logger.info(f"Manufacturer data length: {len(data_bytes)}")
+                        #Logger.info(f"Manufacturer data hex: {data_bytes.hex()}")
+                        
+                        if len(data_bytes) >= 20:
+                            # Company ID (2 bytes)
+                            company_id = (data_bytes[1] << 8) | data_bytes[0]
+                            #Logger.info(f"Company ID: 0x{company_id:04X}")
+                            if len(data_bytes) >= 18 and data_bytes[0] == 0xFF and data_bytes[1] == 0xFF:
+                                # Company ID ติดมาด้วย
+                                rf_switch = data_bytes[14]
+                            else:
+                                # Company ID ถูกตัดออก
+                                rf_switch = data_bytes[12]
+                            if company_id == 0x007E:  # ตรวจสอบ Company ID ที่เราตั้งไว้
+                                Logger.info(f"Manufacturer hex: {data_bytes.hex()}")
+
+                                device_data = {
+                                    'rssi_device': data_bytes[2] if data_bytes[2] != 255 else -1,
+                                    'major': (data_bytes[4] << 8) | data_bytes[5], #เครื่อง0 Time_sync
+                                    'minor': (data_bytes[6] << 8) | data_bytes[7], #เครื่อง0 Time_sync
+                                    'HTT4': (data_bytes[9] << 8) | data_bytes[10], #เครื่องตัวเอง
+                                    'LTT4': (data_bytes[11] << 8) | data_bytes[12], #เครื่องตัวเอง
+                                    'rf_switch': bool(data_bytes[13]), #การสถานะเสา H,V
+                                    'adv_count': data_bytes[15],
+                                    'timestamp': (data_bytes[16] << 8) | data_bytes[17],
+                                    'address': address,
+                                    'name': name,
+                                    'scan_rssi': rssi # RSSI (Scan)เครื่องตัวเอง
+                                }
+                                
+                                Logger.info(f"[TARGET FOUND] Parsed data: {device_data}")
+                                major = device_data['major']
+                                minor = device_data['minor']
+                                Logger.info(f"Sending to PostgresSQL:")
+                                Logger.info(f"rf_switch = {data_bytes[13]}")
+                                App.get_running_app().testxy(device_data)
+                            else:
+                                Logger.info(f"Company ID mismatch: 0x{company_id:04X} != 0xFFFF")
+                        else:
+                            Logger.info(f"Manufacturer data too short: {len(data_bytes)} bytes")
+
+            # ถ้าเจอ target MAC address
+            if address in target_mac_addresses:
+                Logger.info(f"[TARGET MAC FOUND] MAC: {address}")
+                
+                if device_data:  # ถ้าได้ manufacturer data
+                    App.get_running_app().update_found_data_from_manufacturer(device_data)
+                else:
+                    # ถ้าไม่มี manufacturer data ให้ส่งข้อมูลพื้นฐาน
+                    basic_data = {
+                        'address': address,
+                        'name': name,
+                        'scan_rssi': rssi,
+                        'rssi_device': rssi,
+                        'device_index': 0,
+                        'major': 0,
+                        'minor': 0,
+                        'major4': 0,
+                        'minor4': 0,
+                        'rf_switch': False,
+                        'adv_count': 0,
+                        'timestamp': 0
+                    }
+                    App.get_running_app().update_found_data_from_manufacturer(basic_data)
+            #else:
+                
+                #Logger.info(f"MAC {address} not in target list")
+
+            # Logger.info(
+            #     f"Final result - MAC: {address}, Name: {name}, "
+            #     f"UUID: N/A, Major: {major}, Minor: {minor}, RSSI: {rssi}"
+            # )
         
         def clear_devices(self):
-            self._devices.clear()  
+            self._devices.clear()
+
+
+        def connect_to_target(self, address):
+            """เชื่อมต่อกับอุปกรณ์ด้วย MAC address"""
+            Logger.info(f"[CONNECT] Trying to connect to {address}")
+            self.connect(address)
+            Logger.info(f"[BLE] Connecting to {address}...")
+
+        #def on_connection_state_change(self, device, state):
+        def on_connection_state_change(self, gatt, status, new_state):
+            try:
+                #address = gatt.getDevice().getAddress()
+                device = gatt.getDevice()
+                address = device.getAddress()
+            except AttributeError:
+                # กรณี gatt กลายเป็น int
+                Logger.warning(f"[WARN] on_connection_state_change: gatt={gatt}, status={status}, new_state={new_state}, error={e}")
+                address = None
+
+            Logger.info(f"[CONN_STATE_CHANGE] addr={address}, status={status}, new_state={new_state}")
+
+
+        def on_services(self, device, services):
+            """callback เมื่อ discover services แล้ว"""
+            Logger.info(f"[BLE] Services discovered for {device.getAddress()}")
+            for service in services:
+                Logger.info(f"  Service: {service.getUuid()}")
+                for ch in service.getCharacteristics():
+                    Logger.info(f"    Characteristic: {ch.getUuid()} (props: {ch.getProperties()})")
+
+                    # ถ้ารู้ UUID ที่ต้องการอ่าน
+                    if str(ch.getUuid()) == "D4441524-4444-4444-4444-444444444444":
+                        self.read_characteristic(device, ch.getUuid())
+
+        def on_characteristic_read(self, device, characteristic, value):
+            """callback เมื่ออ่านค่าได้"""
+            Logger.info(f"[BLE] Read from {characteristic.getUuid()}: {value}")
+
+        def on_characteristic_changed(self, device, characteristic, value):
+            """callback เมื่อมี notify"""
+            Logger.info(f"[BLE] Notification from {characteristic.getUuid()}: {value}")
+          
     class MyApp(MDApp,BluetoothDispatcher):
         def build(self):
             self.theme_cls.theme_style = "Dark"
@@ -1615,6 +1771,26 @@ if platform == 'android':
             self.status_rssi = None
             self.dialog = None  #MDDialog For general notifications
             self.dialog_restart = None  #MDDialog For notification of restart
+
+            self.received_anchor_ids = set()
+            self.anchor_data_collection = {}
+            self.required_anchor_ids = {
+                "A1_H", "A1_V",  # A1 Horizontal และ Vertical
+                "A2_H", "A2_V",  # A2 Horizontal และ Vertical  
+                "A3_H", "A3_V",  # A3 Horizontal และ Vertical
+                "A4_H", "A4_V"   # A4 Horizontal และ Vertical
+            }
+                        # หรือถ้าต้องการเฉพาะ MAC addresses (4 ตัว)
+            self.required_mac_addresses = {
+                "C6:8B:63:40:D1:2B",  # A1
+                "C3:CB:90:87:FE:E7",  # A2
+                "E6:A1:5E:A5:55:C9",  # A3
+                "DF:42:47:17:39:50"   # A4
+            }
+            self.received_mac_addresses = set()
+            
+            # ใช้ tracking anchor_id เท่านั้น (8 anchor_ids)
+            self.tracking_mode = "anchor_id"
             
             #track found data
             self.target_data_set = [
@@ -1682,7 +1858,33 @@ if platform == 'android':
                 self.root.ids.status.text = "Pls restart. Scan unsuccessfully"
                 self.root.ids.status2.text = "Pls restart. Scan unsuccessfully"
                 Clock.schedule_once(lambda dt: self.show_restart_alert())
+        def update_found_data_from_manufacturer(self, device_data):
+            """Process manufacturer data from advertisement"""
                 
+            # แสดงข้อมูลบนหน้าจอ
+            scanned_info = f"""TARGET DEVICE FOUND!
+            Name: {device_data['name']}
+            MAC: {device_data['address']}
+            RSSI (Scan): {device_data['scan_rssi']} dBm
+            RSSI (Device0): {device_data['rssi_device']} dBm
+            Major0: {device_data['major']}
+            Minor0: {device_data['minor']}
+            HTT (Major4): {device_data['HTT4']}
+            LTT (Minor4): {device_data['LTT4']}
+            RF Switch: {'ANT1 V' if device_data['rf_switch'] else 'ANT2 H'}
+            ADV Count: {device_data['adv_count']}
+            Timestamp: {device_data['timestamp']}
+            """
+            #Device Index: {device_data['device_index']} เคยอยู่ scanned_info
+                
+            # อัปเดต UI
+            self.root.ids.label.text = scanned_info
+            self.root.ids.status.text = "Target device found!"
+            self.root.ids.status2.text = "Target device found!"
+            
+            # เก็บข้อมูลสำหรับส่งไป API
+            self.device_data = device_data
+            Logger.info(f"Device data stored: {device_data}")        
         #Show notification of restart
         def show_restart_alert(self):
             Logger.info("restart_alert_occur")
@@ -1743,6 +1945,12 @@ if platform == 'android':
 
         def start_service(self, loop_count=0):
             #Check if Bluetooth is enabled
+            count = 0
+            count += 1
+            if count == 5:
+                self.root.ids.status.text = "Scan count: 5 times please reset app."
+                return
+            
             x_input = self.root.ids.X_input.text
             y_input = self.root.ids.Y_input.text
 
@@ -1833,15 +2041,16 @@ if platform == 'android':
                 self.scan_for_data()  #Scan again
 
         #Update from Scannerdispather
-        def update_found_data(self, uuid, major, rssi):
+        def update_found_data(self, uuid, major, rssi, mac_address=None):
             if rssi != 127: #127 is mean can't find the value
                 
                 #only check UUID and Major
                 data_tuple = (uuid, major)
-                
+                entry = (uuid, major, rssi, mac_address)
                 # if data_tuple not in self.found_data:
                 if data_tuple not in {(d[0], d[1]) for d in self.found_data}:
-                    self.found_data.add((uuid, major, rssi))
+                    #self.found_data.add((uuid, major, rssi))
+                    self.found_data.add(entry)
                     Logger.info(f"Updated found data: {self.found_data}")
 
         def update_scan_results(self, found_data):
@@ -2068,13 +2277,13 @@ if platform == 'android':
 
             # plot x,y
             map_widget = self.root.ids.map_widget
-            map_widget.plot_point(*map_coordinate, real_coordinate) 
+            map_widget.plot_point(*map_coordinate, real_coordinate)
         #--------------------------------------------------------------------------
 
         #show on screen
         def display_scan_results(self):
             self.scanned_devices = []
-            
+            #mac_address = device.getAddress()
             scanned_info = ''
             A1_V, A1_H, A2_V, A2_H = 0, 0 ,0 ,0
             A3_V, A3_H, A4_V, A4_H = 0 ,0 ,0 ,0
@@ -2088,26 +2297,26 @@ if platform == 'android':
                 if uuid == None:
                     scanned_info = f"Don't have any Device is Match"
                 else:
-                    if ((uuid == "a1111111111111111111111111111111") & (major == 111)):
+                    if ((uuid == "C6:8B:63:40:D1:2B") & (major == 111)):
                         name = "A1(VER)"
                         anchor_id = "A1_V"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A1_V = rssi
                         
-                    elif ((uuid == "a1111111111111111111111111111111") & (major == 888)):
+                    elif ((uuid == "C6:8B:63:40:D1:2B") & (major == 888)):
                         name = "A1(HOR)"
                         anchor_id = "A1_H"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A1_H = rssi
                         
                         
-                    elif ((uuid == "b2222222222222222222222222222222") & (major == 111)):
+                    elif ((uuid == "C3:CB:90:87:FE:E7") & (major == 111)):
                         name = "A2(VER)"
                         anchor_id = "A2_V"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A2_V = rssi
                         
-                    elif ((uuid == "b2222222222222222222222222222222") & (major == 888)):
+                    elif ((uuid == "C3:CB:90:87:FE:E7") & (major == 888)):
                         name = "A2(HOR)"
                         anchor_id = "A2_H"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
@@ -2125,12 +2334,12 @@ if platform == 'android':
                         anchor_id = "A3_H"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A3_H = rssi
-                    elif ((uuid == "d4444444444444444444444444444444") & (major == 111)):  # ใส่ UUID ของ A4
+                    elif ((uuid == "DF:42:47:17:39:50") & (major == 111)):  # ใส่ UUID ของ A4
                         name = "A4(VER)"
                         anchor_id = "A4_V"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
                         A4_V = rssi
-                    elif ((uuid == "d4444444444444444444444444444444") & (major == 888)):  # ใส่ UUID ของ A4
+                    elif ((uuid == "DF:42:47:17:39:50") & (major == 888)):  # ใส่ UUID ของ A4
                         name = "A4(HOR)"
                         anchor_id = "A4_H"
                         scanned_info += f"{name}, RSSI: {rssi} dBm\n"
@@ -2455,37 +2664,201 @@ if platform == 'android':
 
             self.root.ids.status.text = "Data Sent"
             self.root.ids.status2.text = "Data Sent"
-        
-        def testxy(self):
+        '''
+        def testxy(self, device_data):
             x_input = self.root.ids.X_input.text
             y_input = self.root.ids.Y_input.text
-
+            anchor_id = ''
             if x_input == "" or y_input == "":
                 self.show_alert("Please select a Point!")
                 return  #Stop if not select
-            
-            
-            url_datalist = "http://192.168.100.49:5000/rssi_x_y_list" #IP of server to connect database
-            for device in self.scanned_devices:
-                data = {
-                    "rssi": device.get('rssi'),  # ใช้ .get() เพื่อหลีกเลี่ยง KeyError
-                    "anchor_id": device['anchor_id'],
-                    "x": x_input,
-                    "y": y_input,
-                    "name": "Galaxy S22"
-                }
-                try:
-                    response = requests.post(url_datalist, json=data)
-                    response.raise_for_status()
-                    Logger.info(f'Successfully sent data to Server: {response.json()}')
-                except requests.exceptions.HTTPError as http_err:
-                    Logger.error(f'HTTP error occurred: {http_err}')
-                except Exception as err:
-                    Logger.error(f'Other error occurred: {err}')
+            if ((device_data['rf_switch'] == 0) & (device_data['address'] == "DF:42:47:17:39:50")):
+                name = "A4(HOR)"
+                anchor_id = "A4_H"
+            elif ((device_data['rf_switch'] == 1) & (device_data['address'] == "DF:42:47:17:39:50")):
+                name = "A4(VER)"
+                anchor_id = "A4_V"
+            elif ((device_data['rf_switch'] == 0) & (device_data['address'] == "E6:A1:5E:A5:55:C9")):
+                name = "A3(VER)"
+                anchor_id = "A3_V"
+            elif ((device_data['rf_switch'] == 1) & (device_data['address'] == "E6:A1:5E:A5:55:C9")):
+                name = "A3(VER)"
+                anchor_id = "A3_V"
+            elif ((device_data['rf_switch'] == 0) & (device_data['address'] == "C3:CB:90:87:FE:E7")):
+                name = "A2(VER)"
+                anchor_id = "A2_V"
+            elif ((device_data['rf_switch'] == 1) & (device_data['address'] == "C3:CB:90:87:FE:E7")):
+                name = "A2(VER)"
+                anchor_id = "A2_V"
+            elif ((device_data['rf_switch'] == 0) & (device_data['address'] == "C6:8B:63:40:D1:2B")):
+                name = "A1(VER)"
+                anchor_id = "A1_V"
+            elif ((device_data['rf_switch'] == 1) & (device_data['address'] == "C6:8B:63:40:D1:2B")):
+                name = "A1(VER)"
+                anchor_id = "A1_V"                                
+            Logger.info(f"[testxy] anchor_id {anchor_id}")
+            Logger.info(f"[testxy] device_data {type(device_data.get('major'))}")
+            url_datalist = "http://192.168.100.198:5000/rssi_x_y_list" #IP of server to connect database
+            #for device in self.scanned_devices:
+            data = {
+                "rssi": device_data.get('scan_rssi'),  # ใช้ .get() เพื่อหลีกเลี่ยง KeyError
+                "anchor_id": anchor_id,
+                "x": x_input,
+                "y": y_input,
+                "name": "Galaxy S22",
+                "major0": device_data.get('major'),
+                "minor0": device_data.get('minor'),
+                "HTT": device_data.get('HTT4'),
+                "LTT": device_data.get('LTT4'),
+                "RSSI0": device_data.get('rssi_device')
+            }
+            try:
+                response = requests.post(url_datalist, json=data)
+                response.raise_for_status()
+                Logger.info(f'Successfully sent data to Server: {response.json()}')
+            except requests.exceptions.HTTPError as http_err:
+                Logger.error(f'HTTP error occurred: {http_err}')
+            except Exception as err:
+                Logger.error(f'Other error occurred: {err}')
                 
-            self.root.ids.X_input.text = ""
+            #self.root.ids.X_input.text = ""
             self.root.ids.status.text = "Data Sent"
-        #--------------------------------------------------------------------------
+        #--------------------------------------------------------------------------'''
+        def testxy(self, device_data):
+            x_input = self.root.ids.X_input.text
+            y_input = self.root.ids.Y_input.text
+            
+            if x_input == "" or y_input == "":
+                self.show_alert("Please select X, Y values!")
+                return
+
+            anchor_id = ''
+            name = ''
+            mac_address = device_data['address']
+            rf_switch = device_data['rf_switch']
+            
+            # กำหนด anchor_id และ name
+            if mac_address == "DF:42:47:17:39:50":
+                if rf_switch == 0:
+                    name = "A4(HOR)"
+                    anchor_id = "A4_H"
+                else:
+                    name = "A4(VER)" 
+                    anchor_id = "A4_V"
+            elif mac_address == "E6:A1:5E:A5:55:C9":
+                if rf_switch == 0:
+                    name = "A3(HOR)"
+                    anchor_id = "A3_H"
+                else:
+                    name = "A3(VER)"
+                    anchor_id = "A3_V"
+            elif mac_address == "C3:CB:90:87:FE:E7":
+                if rf_switch == 0:
+                    name = "A2(HOR)"
+                    anchor_id = "A2_H"
+                else:
+                    name = "A2(VER)"
+                    anchor_id = "A2_V"
+            elif mac_address == "C6:8B:63:40:D1:2B":
+                if rf_switch == 0:
+                    name = "A1(HOR)"
+                    anchor_id = "A1_H"
+                else:
+                    name = "A1(VER)"
+                    anchor_id = "A1_V"
+            else:
+                Logger.warning(f"Unknown MAC address: {mac_address}")
+                return
+
+            # ติดตาม anchor_id (ต้องได้ทั้ง 8 anchor_ids)
+            # ติดตาม anchor_id (ต้องได้ทั้ง 8 anchor_ids)
+            self.received_anchor_ids.add(anchor_id)
+            self.anchor_data_collection[anchor_id] = {
+                'device_data': device_data,
+                'anchor_id': anchor_id,
+                'name': name,
+                'x_input': x_input,
+                'y_input': y_input,
+                'mac_address': mac_address
+            }
+            
+            required_count = len(self.required_anchor_ids)  # 8 anchor_ids
+            received_count = len(self.received_anchor_ids)
+            
+            Logger.info(f"[testxy] Received {name} ({anchor_id})")
+            Logger.info(f"[testxy] Progress: {received_count}/{required_count} anchor IDs received")
+            Logger.info(f"[testxy] Received: {sorted(self.received_anchor_ids)}")
+            
+            # ตรวจสอบว่าครบทั้ง 8 anchor_ids หรือยัง
+            if self.received_anchor_ids >= self.required_anchor_ids:
+                Logger.info("[testxy] ✅ All 8 anchor IDs received! Processing data...")
+                self.process_all_anchor_data()
+            else:
+                missing = self.required_anchor_ids - self.received_anchor_ids
+                Logger.info(f"[testxy] ⏳ Still need: {sorted(missing)}")
+
+        def process_all_anchor_data(self):
+            """ประมวลผลข้อมูลทั้งหมดเมื่อได้รับครบตามเงื่อนไข"""
+            Logger.info("[process_all_anchor_data] Processing all collected data...")
+            
+            url_datalist = "http://192.168.100.198:5000/rssi_x_y_list"
+            
+            # ส่งข้อมูลทั้งหมด
+            for key, data_info in self.anchor_data_collection.items():
+                device_data = data_info['device_data']
+                anchor_id = data_info['anchor_id']
+                name = data_info['name']
+                
+                data_to_send = {
+                    "rssi": device_data.get('scan_rssi'),
+                    "anchor_id": anchor_id,
+                    "x": data_info['x_input'],
+                    "y": data_info['y_input'],
+                    "name": "Galaxy S22",
+                    "major0": device_data.get('major'),
+                    "minor0": device_data.get('minor'),
+                    "HTT": device_data.get('HTT4'),
+                    "LTT": device_data.get('LTT4'),
+                    "RSSI0": device_data.get('rssi_device')
+                }
+                
+                try:
+                    response = requests.post(url_datalist, json=data_to_send)
+                    response.raise_for_status()
+                    Logger.info(f'Successfully sent {name} data to server')
+                except Exception as e:
+                    Logger.error(f'Error sending {name} data: {e}')
+            
+            self.root.ids.status.text = "All Data Sent Successfully"
+            self.reset_tracking_data()
+
+        def reset_tracking_data(self):
+            """รีเซ็ตข้อมูลการติดตาม"""
+            self.received_anchor_ids.clear()
+            self.received_mac_addresses.clear()
+            self.anchor_data_collection.clear()
+            Logger.info("[reset] Tracking data reset")
+
+        def get_tracking_status(self):
+            """ดูสถานะการติดตาม"""
+            if self.tracking_mode == "anchor_id":
+                return {
+                    'mode': 'anchor_id',
+                    'received': list(self.received_anchor_ids),
+                    'required': list(self.required_anchor_ids),
+                    'missing': list(self.required_anchor_ids - self.received_anchor_ids),
+                    'progress': f"{len(self.received_anchor_ids)}/{len(self.required_anchor_ids)}",
+                    'complete': self.received_anchor_ids >= self.required_anchor_ids
+                }
+            else:
+                return {
+                    'mode': 'mac_address', 
+                    'received': list(self.received_mac_addresses),
+                    'required': list(self.required_mac_addresses),
+                    'missing': list(self.required_mac_addresses - self.received_mac_addresses),
+                    'progress': f"{len(self.received_mac_addresses)}/{len(self.required_mac_addresses)}",
+                    'complete': self.received_mac_addresses >= self.required_mac_addresses
+                }
 
         #for stop scan
         def stop_service(self):
